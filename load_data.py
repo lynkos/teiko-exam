@@ -1,37 +1,48 @@
-import sqlite3
-import csv
+from sqlite3 import Connection, Cursor, connect
+from csv import DictReader
 
 # CONSTANTS
-DATABASE_NAME: str = "subjects.db"
-CSV_FILE: str = "cell-count.csv"
+DATABASE: str = "subjects.db"
+CSV: str = "cell-count.csv"
 
-def get_unique_vals(connection: sqlite3.Connection, table: str, column: str):
-    cursor = connection.cursor()
-    cursor.execute(f"SELECT DISTINCT {column} FROM {table}")
-    return [row[0] for row in cursor.fetchall()]
+def validate_db(cursor: Cursor, table: str, column: str, value: str) -> bool:
+    """
+    Check if a value already exists in a given table
 
-def exists_in_db(connection: sqlite3.Connection, table: str, column: str, value: str) -> bool:
-    cursor = connection.cursor()
+    Args:
+        cursor (Cursor): Database cursor
+        table (str): Table name
+        column (str): Column name
+        value (str): Value to check
+
+    Returns:
+        bool: True if value exists, else False
+    """
     cursor.execute(f"SELECT 1 FROM {table} WHERE {column} = ?", (value,))
     return cursor.fetchone() is not None
 
-def load_csv(connection: sqlite3.Connection, csv_file: str = CSV_FILE):
+def load_csv(connection: Connection, csv: str = CSV) -> None:
+    """
+    Load data from a CSV file into the database
+    
+    Args:
+        connection (Connection): Database connection
+        csv (str, optional): Path to the CSV file; defaults to CSV
+    """
     cursor = connection.cursor()
 
-    unique_subjects = set()
-    
-    num_rows = 0
-    
-    with open(csv_file, mode = "r", newline = "", encoding = "utf-8") as file:
-        reader = csv.DictReader(file, delimiter = ",")
+    # Open given CSV file and read its contents
+    with open(csv, mode = "r", newline = "", encoding = "utf-8") as file:
+        csv_reader = DictReader(file, delimiter = ",")
 
-        for row in reader:
+        # Loop over each row in CSV file
+        for row in csv_reader:
+            # Extract value of 'subject' column in current row
             subject = row["subject"]
-            sample = row["sample"]
-            
-            # INSERT SUBJECT
-            if subject not in unique_subjects:
-                print(f"Inserting subject {subject} with sample {sample}")
+
+            # Check if current row's subject data already exists in 'subjects' table to avoid duplicates
+            if not validate_db(cursor, "subjects", "subject", subject):
+                # Insert current row's subject data into 'subjects' table
                 cursor.execute("""
                     INSERT INTO subjects
                     (subject, project, condition, age, sex, treatment, response)
@@ -46,88 +57,102 @@ def load_csv(connection: sqlite3.Connection, csv_file: str = CSV_FILE):
                         row["response"] if row["response"] else None
                     )
                 )
-                unique_subjects.add(subject)
-                print(f"Subject {subject} inserted successfully")
+                print(f"Recorded '{subject}' in 'subjects' table in database")
 
-            # INSERT SAMPLE
-            print(f"Inserting sample {sample} for subject {subject}")
-            cursor.execute("""
-                INSERT INTO samples
-                (sample, subject, sample_type, time_from_treatment_start, b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                    sample,
-                    subject,
-                    row["sample_type"],
-                    int(row["time_from_treatment_start"]) if row["time_from_treatment_start"] else None,
-                    int(row["b_cell"]),
-                    int(row["cd8_t_cell"]),
-                    int(row["cd4_t_cell"]),
-                    int(row["nk_cell"]),
-                    int(row["monocyte"])
+            # Extract value of 'sample' column in current row
+            sample = row["sample"]
+
+            # Check if current row's sample data already exists in 'samples' table to avoid duplicates
+            if not validate_db(cursor, "samples", "sample", sample):
+                # Insert current row's sample data into 'samples' table
+                cursor.execute("""
+                    INSERT INTO samples
+                    (sample, subject, sample_type, time_from_treatment_start, b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                        sample,
+                        subject,
+                        row["sample_type"],
+                        int(row["time_from_treatment_start"]) if row["time_from_treatment_start"] else None,
+                        int(row["b_cell"]),
+                        int(row["cd8_t_cell"]),
+                        int(row["cd4_t_cell"]),
+                        int(row["nk_cell"]),
+                        int(row["monocyte"])
+                    )
                 )
-            )
-
-            num_rows += 1
+                print(f"Recorded '{sample}' in 'samples' table in database")
 
     connection.commit()
 
-    print(f"{num_rows} records successfully loaded")
+def create_database(connection: Connection) -> None:
+    """
+    Create SQLite database
+    
+    Args:
+        connection (Connection): Database connection
+    """
+    cursor = connection.cursor()
 
-def create_database(connection: sqlite3.Connection):
-        cursor = connection.cursor()
+    # Enable foreign key constraints
+    cursor.execute("PRAGMA foreign_keys = ON;")
 
-        # Enable foreign keys
-        cursor.execute("PRAGMA foreign_keys = ON;")
+    # Create 'subjects' table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS subjects (
+            subject TEXT PRIMARY KEY,
+            project TEXT,
+            condition TEXT,
+            age INTEGER,
+            sex TEXT CHECK(sex IN ('M', 'F')),
+            treatment TEXT,
+            response TEXT CHECK(response IN ('yes', 'no', ''))
+        )
+    """)
+    print("Added 'subjects' table to database")
 
-        # SUBJECTS
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS subjects (
-                subject TEXT PRIMARY KEY,
-                project TEXT,
-                condition TEXT,
-                age INTEGER,
-                sex TEXT CHECK(sex IN ('M', 'F')),
-                treatment TEXT,
-                response TEXT CHECK(response IN ('yes', 'no', ''))
-            )
-        """)
-        print("Created table: subjects")
+    # Create 'samples' table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS samples (
+            sample TEXT PRIMARY KEY,
+            subject TEXT NOT NULL,
+            sample_type TEXT,
+            time_from_treatment_start INTEGER,
+            b_cell INTEGER,
+            cd8_t_cell INTEGER,
+            cd4_t_cell INTEGER,
+            nk_cell INTEGER,
+            monocyte INTEGER,
+            FOREIGN KEY (subject) REFERENCES subjects (subject)
+        )
+    """)
+    print("Added 'samples' table to database")
 
-        # SAMPLES
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS samples (
-                sample TEXT PRIMARY KEY,
-                subject TEXT NOT NULL,
-                sample_type TEXT,
-                time_from_treatment_start INTEGER,
-                b_cell INTEGER,
-                cd8_t_cell INTEGER,
-                cd4_t_cell INTEGER,
-                nk_cell INTEGER,
-                monocyte INTEGER,
-                FOREIGN KEY (subject) REFERENCES subjects (subject)
-            )
-        """)
-        print("Created table: samples")
+    # Indexing for faster queries
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_samples_subject ON samples(subject)")
 
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_samples_subject ON samples(subject)")
+    connection.commit()
 
-        connection.commit()
+def main(database: str = DATABASE, csv: str = CSV) -> None:
+    """
+    Main function for Part 1: Data Management
+        1. Create SQLite database
+        2. Load data from CSV file into database
 
-def main(database_name: str = DATABASE_NAME, csv_file: str = CSV_FILE):
+    Args:
+        database (str, optional): Name of the SQLite database file; defaults to DATABASE
+        csv (str, optional): Path to the CSV file; defaults to CSV
+    """
     try:
-        with sqlite3.connect(database_name) as connection:
-            print(f"Creating database {database_name}")
+        with connect(database) as connection:
+            # 1. Create SQLite database
+            print(f"Creating database '{database}'")
             create_database(connection)
 
-            print(f"Loading data from {csv_file} into database {database_name}")
-            load_csv(connection, csv_file)
-
-            print(get_unique_vals(connection, "samples", "sample_type"))
-
-        print(f"Database {database_name} successfully created")
-
+            # 2. Load data from CSV file into database
+            load_csv(connection, csv)
+            print(f"Loaded data from '{csv}' into '{database}'")
+            
     except Exception as e:
         print(f"An error occurred in main: {e}")
 
