@@ -12,10 +12,10 @@
 - [x] [Python 3](https://www.python.org/downloads)
 
 ## Installation
-1. Make sure [Python3](https://www.python.org) is installed
+1. Make sure [Python 3](https://www.python.org) is installed
    ```sh
-    python3 --version
-    ```
+   python3 --version
+   ```
 
 2. Clone the repository (i.e. [`teiko-exam`](https://github.com/lynkos/teiko-exam)), then change directory to `teiko-exam`
    ```sh
@@ -23,14 +23,21 @@
    ```
 
 ## Usage
-Run the following command to set up the SQLite database and load the data from `cell-count.csv`
+### Part 1: Data Management
+Set up the SQLite database `subjects.db` and load the data from [`cell-count.csv`](cell-count.csv)
+   ```sh
+   python3 load_data.py
+   ```
 
-```sh
-python3 load_data.py
-```
+### Part 2: Initial Analysis - Data Overview
+Run the data analysis script to generate insights and visualizations
+   ```sh
+   python3 data_analysis.py
+   ```
 
-> [!TIP]
-> If `python3` doesn't work, try using `python` instead
+### Part 3: Statistical Analysis
+
+### Part 4: Data Subset Analysis
 
 ## Database Schema
 
@@ -43,7 +50,8 @@ python3 load_data.py
 .
 ├── .gitignore
 ├── cell-count.csv
+├── data_analysis.py
 ├── load_data.py
-├── patients.db
-└── README.md
+├── README.md
+└── subjects.db
 ```
