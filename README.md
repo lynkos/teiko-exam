@@ -78,6 +78,7 @@ Run the stats analysis script to generate insights and visualizations
 ### Assumptions
 
 ## Dashboard
+<span style="font-size: 1.5em; font-weight: bold;"><a href="https://be97c6b7-cf30-4e8b-958d-837de4ee4a72.plotly.app" target="_blank" title="">Interactive dashboard for Teiko Exam</a></span>
 
 ## Repository Structure
 ```plaintext
