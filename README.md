@@ -67,6 +67,7 @@ Run the data analysis script to generate insights and visualizations
 ## Database Schema
 
 ## Overview
+### Assumptions
 
 ## Dashboard
 
