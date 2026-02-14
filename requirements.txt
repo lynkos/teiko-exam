@@ -2,3 +2,4 @@ pandas==3.0.0
 dash==4.0.0
 dash-ag-grid==33.3.3
 scipy==1.17.0
+scikit-learn==1.8.0
