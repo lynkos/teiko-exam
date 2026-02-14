@@ -46,59 +46,6 @@ DATA_FRAME2 = pandas.read_sql_query(
     """, connection
 )
 
-# Identify all melanoma PBMC samples at baseline
-# (time_from_treatment_start is 0) from patients
-# who have been treated with miraclib
-DATA_FRAME3 = pandas.read_sql_query(
-    f"""SELECT t.sample, t.subject
-        FROM samples t
-        JOIN subjects subj ON t.subject = subj.subject
-        WHERE t.sample_type = 'PBMC'
-        AND t.time_from_treatment_start = 0
-        AND subj.condition = 'melanoma'
-        AND subj.treatment = 'miraclib'
-    """, connection
-)
-
-# How many samples from each project
-DATA_FRAME_PROJECTS = pandas.read_sql_query(
-    f"""SELECT subj.project, COUNT(t.sample) AS samples_per_project
-        FROM samples t
-        JOIN subjects subj ON t.subject = subj.subject
-        WHERE t.sample_type = 'PBMC'
-        AND t.time_from_treatment_start = 0
-        AND subj.condition = 'melanoma'
-        AND subj.treatment = 'miraclib'
-        GROUP BY subj.project
-    """, connection
-)
-
-# How many subjects were responders/non-responders 
-DATA_FRAME_RESPONDERS = pandas.read_sql_query(
-    f"""SELECT subj.response, COUNT(DISTINCT t.subject) AS response_count
-        FROM samples t
-        JOIN subjects subj ON t.subject = subj.subject
-        WHERE t.sample_type = 'PBMC'
-        AND t.time_from_treatment_start = 0
-        AND subj.condition = 'melanoma'
-        AND subj.treatment = 'miraclib'
-        GROUP BY subj.response
-    """, connection
-)
-
-# How many subjects were males/females
-DATA_FRAME_SEXES = pandas.read_sql_query(
-    f"""SELECT subj.sex, COUNT(DISTINCT t.subject) AS sex_count
-        FROM samples t
-        JOIN subjects subj ON t.subject = subj.subject
-        WHERE t.sample_type = 'PBMC'
-        AND t.time_from_treatment_start = 0
-        AND subj.condition = 'melanoma'
-        AND subj.treatment = 'miraclib'
-        GROUP BY subj.sex
-    """, connection
-)
-
 connection.close()
 
 # TEST
