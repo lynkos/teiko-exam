@@ -3,14 +3,39 @@ import scipy.stats as stats
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sqlite3 import connect
-from data_analysis import SUMMARY_TABLE_NAME, DATABASE
-
-CELL_TYPES = [ "b_cell", "cd8_t_cell", "cd4_t_cell", "nk_cell", "monocyte" ]
+from data_analysis import SUMMARY_TABLE_NAME, DATABASE, CELL_TYPES
 
 connection = connect(DATABASE)
-# FILTER
+
+# Summary table
+DATA_FRAME_summary = pandas.read_sql_query(
+    f"""SELECT sample, total_count, population, count, percentage
+        FROM {SUMMARY_TABLE_NAME}
+    """, connection
+)
+
+# Population relative frequencies comparing responders
+# versus non-responders using a boxplot for each
+# immune cell population
 DATA_FRAME = pandas.read_sql_query(
-    f"""SELECT s.sample, s.total_count, s.population, s.count, s.percentage, t.subject, subj.response
+    f"""SELECT s.population, s.percentage, subj.response
+        FROM {SUMMARY_TABLE_NAME} s
+        JOIN samples t ON s.sample = t.sample
+        JOIN subjects subj ON t.subject = subj.subject
+        WHERE subj.response IN ('yes', 'no')
+    """, connection
+)
+
+# Compare the differences in cell population relative frequencies of
+# melanoma patients receiving miraclib who respond (responders)
+# versus those who do not (non-responders), with the overarching
+# aim of predicting response to the treatment miraclib.
+# 
+# Response information can be found in column "response",
+# with value "yes" for responding and value "no" for non-responding.
+# Please only include PBMC samples.
+DATA_FRAME2 = pandas.read_sql_query(
+    f"""SELECT DISTINCT s.sample, s.total_count, b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte, t.subject, subj.response
         FROM {SUMMARY_TABLE_NAME} s
         JOIN samples t ON s.sample = t.sample
         JOIN subjects subj ON t.subject = subj.subject
@@ -21,15 +46,56 @@ DATA_FRAME = pandas.read_sql_query(
     """, connection
 )
 
-DATA_FRAME2 = pandas.read_sql_query(
-    f"""SELECT DISTINCT t.sample, s.total_count, b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte, t.subject, subj.response
-        FROM {SUMMARY_TABLE_NAME} s
-        JOIN samples t ON s.sample = t.sample
+# Identify all melanoma PBMC samples at baseline
+# (time_from_treatment_start is 0) from patients
+# who have been treated with miraclib
+DATA_FRAME3 = pandas.read_sql_query(
+    f"""SELECT t.sample, t.subject
+        FROM samples t
         JOIN subjects subj ON t.subject = subj.subject
         WHERE t.sample_type = 'PBMC'
+        AND t.time_from_treatment_start = 0
         AND subj.condition = 'melanoma'
         AND subj.treatment = 'miraclib'
-        AND subj.response IN ('yes', 'no')
+    """, connection
+)
+
+# How many samples from each project
+DATA_FRAME_PROJECTS = pandas.read_sql_query(
+    f"""SELECT subj.project, COUNT(t.sample) AS samples_per_project
+        FROM samples t
+        JOIN subjects subj ON t.subject = subj.subject
+        WHERE t.sample_type = 'PBMC'
+        AND t.time_from_treatment_start = 0
+        AND subj.condition = 'melanoma'
+        AND subj.treatment = 'miraclib'
+        GROUP BY subj.project
+    """, connection
+)
+
+# How many subjects were responders/non-responders 
+DATA_FRAME_RESPONDERS = pandas.read_sql_query(
+    f"""SELECT subj.response, COUNT(DISTINCT t.subject) AS response_count
+        FROM samples t
+        JOIN subjects subj ON t.subject = subj.subject
+        WHERE t.sample_type = 'PBMC'
+        AND t.time_from_treatment_start = 0
+        AND subj.condition = 'melanoma'
+        AND subj.treatment = 'miraclib'
+        GROUP BY subj.response
+    """, connection
+)
+
+# How many subjects were males/females
+DATA_FRAME_SEXES = pandas.read_sql_query(
+    f"""SELECT subj.sex, COUNT(DISTINCT t.subject) AS sex_count
+        FROM samples t
+        JOIN subjects subj ON t.subject = subj.subject
+        WHERE t.sample_type = 'PBMC'
+        AND t.time_from_treatment_start = 0
+        AND subj.condition = 'melanoma'
+        AND subj.treatment = 'miraclib'
+        GROUP BY subj.sex
     """, connection
 )
 
@@ -57,8 +123,6 @@ def compare_populations():
     return pandas.DataFrame(results)
 
 COMPARISON = compare_populations()
-
-print(COMPARISON.to_string(index = False))
 
 def train_model(df):    
     # 1. Feature Engineering (Percentages)

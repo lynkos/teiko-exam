@@ -1,14 +1,10 @@
 from sqlite3 import Connection, connect
 from uuid import uuid4
-import pandas
 
 # CONSTANTS
 SUMMARY_TABLE_NAME: str = "summary_table"
 DATABASE: str = "subjects.db"
-
-def print_summary_table(connection: Connection, table: str = SUMMARY_TABLE_NAME) -> None:
-    data_frame = pandas.read_sql_query(f"SELECT sample, total_count, population, count, percentage FROM {table}", connection)
-    print(data_frame.to_string(index = False))
+CELL_TYPES = [ "b_cell", "cd8_t_cell", "cd4_t_cell", "nk_cell", "monocyte" ]
 
 def populate_summary_table(connection: Connection, table: str = SUMMARY_TABLE_NAME) -> None:
     cursor = connection.cursor()
@@ -23,8 +19,7 @@ def populate_summary_table(connection: Connection, table: str = SUMMARY_TABLE_NA
         total_count = sum(cell_columns)
 
         for population, count in zip(
-            [ "b_cell", "cd8_t_cell", "cd4_t_cell", "nk_cell", "monocyte" ],
-            cell_columns
+            CELL_TYPES, cell_columns
         ):
             cursor.execute(f"""
                 INSERT INTO {table}
@@ -68,11 +63,8 @@ def main(database: str = DATABASE, table: str = SUMMARY_TABLE_NAME) -> None:
         with connect(database) as connection:
             print(f"Creating new table in '{database}'")
             create_summary_table(connection, table)
-            
             populate_summary_table(connection, table)
-            
-            print_summary_table(connection, table)
-            
+                        
     except Exception as e:
         print(f"An error occurred in main: {e}")
 

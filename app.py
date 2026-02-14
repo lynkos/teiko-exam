@@ -1,7 +1,7 @@
 from dash import Dash, html, dcc
 import dash_ag_grid as dag
 import plotly.express as px
-from stats_analysis import DATA_FRAME, COMPARISON
+from stats_analysis import DATA_FRAME, COMPARISON, DATA_FRAME3, DATA_FRAME_summary, DATA_FRAME2, DATA_FRAME_PROJECTS, DATA_FRAME_RESPONDERS, DATA_FRAME_SEXES
 
 # pip install "dash[cloud]"
 
@@ -11,16 +11,44 @@ app = Dash(__name__)
 
 app.layout = [
     # SUMMARY TABLE
-    html.Div(children = "Summary Table with Response"),
+    html.Div(children = "Summary Table"),
     dag.AgGrid(
-        rowData = DATA_FRAME.to_dict("records"),
-        columnDefs = [ { "field": i } for i in DATA_FRAME.columns ]
+        rowData = DATA_FRAME_summary.to_dict("records"),
+        columnDefs = [ { "field": i } for i in DATA_FRAME_summary.columns ]
     ),
+    
     # BOXPLOT
+    html.Div(children = "Relative frequencies of responders vs. non-responders for each cell population"),
     dcc.Graph(figure = px.box(DATA_FRAME, x = "population", y = "percentage", color = "response", title = "Responders vs. Non-Responders Comparison")),
+
+    html.Div(children = " Differences in relative frequencies between responders and non-responders for all cell populations"),
     dag.AgGrid(
         rowData = COMPARISON.to_dict("records"),
         columnDefs = [ { "field": i } for i in COMPARISON.columns ]
+    ),
+    
+    html.Div(children = "All melanoma PBMC samples at baseline from patients treated with miraclib"),
+    dag.AgGrid(
+        rowData = DATA_FRAME3.to_dict("records"),
+        columnDefs = [ { "field": i } for i in DATA_FRAME3.columns ]
+    ),
+
+    html.Div(children = "How many samples from each project"),
+    dag.AgGrid(
+        rowData = DATA_FRAME_PROJECTS.to_dict("records"),
+        columnDefs = [ { "field": i } for i in DATA_FRAME_PROJECTS.columns ]
+    ),
+
+    html.Div(children = "How many subjects were responders"),
+    dag.AgGrid(
+        rowData = DATA_FRAME_RESPONDERS.to_dict("records"),
+        columnDefs = [ { "field": i } for i in DATA_FRAME_RESPONDERS.columns ]
+    ),
+
+    html.Div(children = "How many subjects were males/females"),
+    dag.AgGrid(
+        rowData = DATA_FRAME_SEXES.to_dict("records"),
+        columnDefs = [ { "field": i } for i in DATA_FRAME_SEXES.columns ]
     ),
 ]
 
