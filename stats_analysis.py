@@ -1,6 +1,6 @@
 import pandas
 import scipy.stats as stats
-from sklearn.model_selection import GroupKFold, cross_val_score
+from sklearn.model_selection import GroupKFold
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sqlite3 import connect
@@ -79,12 +79,6 @@ def train_model(df):
     clf = RandomForestClassifier(n_estimators=100, random_state=42)
 
     clf.fit(X, y)
-    
-    # 4. Save artifacts
-    # In a real environment, you'd save these to files:
-    # joblib.dump(clf, 'immune_model.pkl')
-    # joblib.dump(le, 'label_encoder.pkl')
-    # joblib.dump(cell_cols, 'feature_names.pkl')
     
     return clf, le
 
