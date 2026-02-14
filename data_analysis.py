@@ -4,8 +4,13 @@ import pandas
 
 # CONSTANTS
 DATABASE: str = "subjects.db"
+SUMMARY_TABLE_NAME: str = "summary_table"
 
-def populate_table(connection: Connection) -> None:
+def print_table(connection: Connection, table: str = SUMMARY_TABLE_NAME) -> None:
+    data_frame = pandas.read_sql_query(f"SELECT sample, total_count, population, count, percentage FROM {table}", connection)
+    print(data_frame.to_string(index = False))
+
+def populate_table(connection: Connection, table: str = SUMMARY_TABLE_NAME) -> None:
     cursor = connection.cursor()
 
     sample_data = cursor.execute("SELECT sample, b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte FROM samples").fetchall()
@@ -13,41 +18,39 @@ def populate_table(connection: Connection) -> None:
     for sample in sample_data:
         sample_id, b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte = sample
 
-        total_count = b_cell + cd8_t_cell + cd4_t_cell + nk_cell + monocyte
+        cell_columns = [ b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte ]
+
+        total_count = sum(cell_columns)
 
         for population, count in zip(
-            ["b_cell", "cd8_t_cell", "cd4_t_cell", "nk_cell", "monocyte"],
-            [b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte] # sample[1:]
+            [ "b_cell", "cd8_t_cell", "cd4_t_cell", "nk_cell", "monocyte" ],
+            cell_columns
         ):
-            unique_id = str(uuid4())
-            percentage = (count / total_count) * 100 if total_count > 0 else 0
-            cursor.execute("""
-                INSERT INTO cell_frequency
+            cursor.execute(f"""
+                INSERT INTO {table}
                 (id, sample, total_count, population, count, percentage)
                 VALUES (?, ?, ?, ?, ?, ?)
             """, (
-                    unique_id,
+                    str(uuid4()),
                     sample_id,
                     total_count,
                     population,
                     count,
-                    percentage
+                    (count / total_count) * 100 if total_count > 0 else 0
                 )
             )
 
-        print(f"Processed sample '{sample_id}' and inserted cell frequency data into 'cell_frequency' table")
-
     connection.commit()
 
-def create_table(connection: Connection):
+def create_table(connection: Connection, table: str = SUMMARY_TABLE_NAME):
     cursor = connection.cursor()
 
     # Enable foreign key constraints
     cursor.execute("PRAGMA foreign_keys = ON;")
 
-    # Create 'cell_frequency' table with composite primary key
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS cell_frequency (
+    # Create table with composite primary key
+    cursor.execute(f"""
+        CREATE TABLE IF NOT EXISTS {table} (
             id TEXT PRIMARY KEY,
             sample TEXT,
             total_count INTEGER,
@@ -60,13 +63,15 @@ def create_table(connection: Connection):
 
     connection.commit()
 
-def main(database: str = DATABASE) -> None:
+def main(database: str = DATABASE, table: str = SUMMARY_TABLE_NAME) -> None:
     try:
         with connect(database) as connection:
             print(f"Creating new table in '{database}'")
-            create_table(connection)
-            populate_table(connection)
-            print(f"Populated 'cell_frequency' table in '{database}'")
+            create_table(connection, table)
+            
+            populate_table(connection, table)
+            
+            print_table(connection, table)
             
     except Exception as e:
         print(f"An error occurred in main: {e}")
