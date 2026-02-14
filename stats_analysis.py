@@ -78,12 +78,6 @@ def train_model(df):
     # 3. Train Classifier
     clf = RandomForestClassifier(n_estimators=100, random_state=42)
 
-    # Simple cross-validation to get accuracy score
-    # We use GroupKFold to ensure samples from the same subject don't end up in both train and test
-    scores = cross_val_score(clf, X, y, groups=groups, cv=gkf, scoring='accuracy')
-
-    print(f"Cross-Validation Accuracy (Grouped by Subject): {scores.mean():.2f}")
-
     clf.fit(X, y)
     
     # 4. Save artifacts

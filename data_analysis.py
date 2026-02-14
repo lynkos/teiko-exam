@@ -1,10 +1,10 @@
 from sqlite3 import Connection, connect
 from uuid import uuid4
-from load_data import DATABASE
 import pandas
 
 # CONSTANTS
 SUMMARY_TABLE_NAME: str = "summary_table"
+DATABASE: str = "subjects.db"
 
 def print_summary_table(connection: Connection, table: str = SUMMARY_TABLE_NAME) -> None:
     data_frame = pandas.read_sql_query(f"SELECT sample, total_count, population, count, percentage FROM {table}", connection)
