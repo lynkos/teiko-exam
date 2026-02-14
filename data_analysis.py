@@ -1,16 +1,16 @@
 from sqlite3 import Connection, connect
 from uuid import uuid4
+from load_data import DATABASE
 import pandas
 
 # CONSTANTS
-DATABASE: str = "subjects.db"
 SUMMARY_TABLE_NAME: str = "summary_table"
 
-def print_table(connection: Connection, table: str = SUMMARY_TABLE_NAME) -> None:
+def print_summary_table(connection: Connection, table: str = SUMMARY_TABLE_NAME) -> None:
     data_frame = pandas.read_sql_query(f"SELECT sample, total_count, population, count, percentage FROM {table}", connection)
     print(data_frame.to_string(index = False))
 
-def populate_table(connection: Connection, table: str = SUMMARY_TABLE_NAME) -> None:
+def populate_summary_table(connection: Connection, table: str = SUMMARY_TABLE_NAME) -> None:
     cursor = connection.cursor()
 
     sample_data = cursor.execute("SELECT sample, b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte FROM samples").fetchall()
@@ -42,13 +42,13 @@ def populate_table(connection: Connection, table: str = SUMMARY_TABLE_NAME) -> N
 
     connection.commit()
 
-def create_table(connection: Connection, table: str = SUMMARY_TABLE_NAME):
+def create_summary_table(connection: Connection, table: str = SUMMARY_TABLE_NAME):
     cursor = connection.cursor()
 
     # Enable foreign key constraints
     cursor.execute("PRAGMA foreign_keys = ON;")
 
-    # Create table with composite primary key
+    # Create summary table
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS {table} (
             id TEXT PRIMARY KEY,
@@ -67,11 +67,11 @@ def main(database: str = DATABASE, table: str = SUMMARY_TABLE_NAME) -> None:
     try:
         with connect(database) as connection:
             print(f"Creating new table in '{database}'")
-            create_table(connection, table)
+            create_summary_table(connection, table)
             
-            populate_table(connection, table)
+            populate_summary_table(connection, table)
             
-            print_table(connection, table)
+            print_summary_table(connection, table)
             
     except Exception as e:
         print(f"An error occurred in main: {e}")
