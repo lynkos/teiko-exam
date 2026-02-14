@@ -56,7 +56,9 @@ def compare_populations():
 
     return pandas.DataFrame(results)
 
-print(compare_populations().to_string(index = False))
+COMPARISON = compare_populations()
+
+print(COMPARISON.to_string(index = False))
 
 def train_model(df):    
     # 1. Feature Engineering (Percentages)
