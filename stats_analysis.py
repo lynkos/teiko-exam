@@ -1,6 +1,5 @@
 import pandas
 import scipy.stats as stats
-from sklearn.model_selection import GroupKFold
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sqlite3 import connect
@@ -37,27 +36,29 @@ DATA_FRAME2 = pandas.read_sql_query(
 connection.close()
 
 # TEST
-populations = DATA_FRAME['population'].unique()
-results = []
+def compare_populations():
+    populations = DATA_FRAME['population'].unique()
+    results = []
 
-for pop in populations:
-    df_pop = DATA_FRAME[DATA_FRAME['population'] == pop]
-    
-    yes = df_pop[df_pop['response'] == 'yes']['percentage']
-    no = df_pop[df_pop['response'] == 'no']['percentage']
+    for pop in populations:
+        df_pop = DATA_FRAME[DATA_FRAME['population'] == pop]
+        
+        yes = df_pop[df_pop['response'] == 'yes']['percentage']
+        no = df_pop[df_pop['response'] == 'no']['percentage']
 
-    stat, p_val = stats.mannwhitneyu(yes, no, alternative='two-sided')
-    
-    results.append({
-        'Population': pop,
-        'P-Value': round(p_val, 5),
-        'Significant (p < 0.05)': p_val < 0.05,
-        'Mean_Yes': round(yes.mean(), 2),
-        'Mean_No': round(no.mean(), 2)
-    })
+        _, p_val = stats.mannwhitneyu(yes, no)
+        
+        results.append({
+            'Population': pop,
+            'P-Value': round(p_val, 5),
+            'Significant (p < 0.05)': p_val < 0.05,
+            'Mean_Yes': round(yes.mean(), 2),
+            'Mean_No': round(no.mean(), 2)
+        })
 
-stats_df = pandas.DataFrame(results)
-print(stats_df)
+    return pandas.DataFrame(results)
+
+print(compare_populations())
 
 def train_model(df):    
     # 1. Feature Engineering (Percentages)
@@ -68,12 +69,6 @@ def train_model(df):
     # 2. Target Encoding
     le = LabelEncoder()
     y = le.fit_transform(df['response'])
-
-    # C. Handling Hierarchical Data (Subject leakage)
-    # Since one subject can have multiple samples, we should strictly split 
-    # by SUBJECT, not by SAMPLE, to ensure the model doesn't just "memorize" a patient.
-    groups = df['subject']
-    gkf = GroupKFold(n_splits=5) # Using 2 splits because dataset is tiny. In real data, use 5 or 10.
 
     # 3. Train Classifier
     clf = RandomForestClassifier(n_estimators=100, random_state=42)
