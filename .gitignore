@@ -1,2 +1,4 @@
+.venv
 .vscode
-schema.drawio
+*.drawio
+__pycache__
