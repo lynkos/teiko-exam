@@ -81,7 +81,8 @@ Run `app.py` for data subset analysis (i.e. visualizes data from [`subset_analys
 ## Overview
 ### Assumptions
 * An empty `response` does NOT imply a value of `no`. In other words, I excluded any sample with an empty `response` from the analysis.
-* In part 3, the visualization does not exclude non-`melanoma` patients, non-`PBMC` samples, or non-`miraclib` treatments.
+* In Part 3, the visualization does not exclude non-`melanoma` patients, non-`PBMC` samples, or non-`miraclib` treatments.
+* Data is **NOT** normally distributed, so I used Mann–Whitney U test for Part 3.
 
 ## Dashboard
 <span style="font-size: 1.5em; font-weight: bold;"><a href="https://be97c6b7-cf30-4e8b-958d-837de4ee4a72.plotly.app" target="_blank" title="">Interactive dashboard for Teiko Exam</a></span>
