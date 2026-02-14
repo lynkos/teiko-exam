@@ -2,6 +2,9 @@
     <h1>Teiko Technical Exam</h1>
     <img alt="Python" src="https://img.shields.io/static/v1?label=Language&style=flat&message=Python+3.14.0&logo=python&color=c7a228&labelColor=393939&logoColor=4f97d1">
     <img alt="SQLite" src="https://img.shields.io/static/v1?label=Libraries&style=flat&message=SQLite&logo=sqlite&color=003B57&labelColor=393939&logoColor=003B57">
+    <img alt="pandas" src="https://img.shields.io/static/v1?label=Libraries&style=flat&message=pandas&logo=pandas&color=150458&labelColor=393939&logoColor=150458">
+    <img alt="SciPy" src="https://img.shields.io/static/v1?label=Libraries&style=flat&message=SciPy&logo=scipy&color=8CAAE6&labelColor=393939&logoColor=8CAAE6">
+    <img alt="Plotly" src="https://img.shields.io/static/v1?label=Libraries&style=flat&message=Plotly&logo=plotly&color=7A76FF&labelColor=393939&logoColor=7A76FF">
     <img alt="Shell" src="https://img.shields.io/static/v1?label=Shell&style=flat&message=Bash&logo=gnu+bash&color=4EAA25&labelColor=393939&logoColor=4EAA25">
     <br>
     <img alt="Last Commit" src="https://img.shields.io/github/last-commit/lynkos/teiko-exam?style=flat&label=Last+Commit&labelColor=393939&color=be0000">
