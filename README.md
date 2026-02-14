@@ -93,3 +93,15 @@ Run the stats analysis script to generate insights and visualizations
 ├── stats_analysis.py
 └── subjects.db
 ```
+
+| Filename | Description |
+|:--------:|:-----------:|
+| `.gitignore` | Files and directories to be ignored by Git |
+| `app.py` | Creates a web dashboard using Plotly |
+| `cell-count.csv` | Original dataset |
+| `data_analysis.py` | Generate and print the summary table |
+| `load_data.py` | Set up the SQLite database `subjects.db` and load the data from `cell-count.csv` |
+| `README.md` | This file |
+| `requirements.txt` | Dependencies |
+| `stats_analysis.py` | Content I |
+| `subjects.db` | SQLite database containing samples, subjects, and summary tables |
