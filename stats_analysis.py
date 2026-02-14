@@ -49,16 +49,14 @@ def compare_populations():
         _, p_val = stats.mannwhitneyu(yes, no)
         
         results.append({
-            'Population': pop,
-            'P-Value': round(p_val, 5),
-            'Significant (p < 0.05)': p_val < 0.05,
-            'Mean_Yes': round(yes.mean(), 2),
-            'Mean_No': round(no.mean(), 2)
+            'Cell Population': pop,
+            'P-Value': round(p_val, 3),
+            'Significant Difference': p_val < 0.05
         })
 
     return pandas.DataFrame(results)
 
-print(compare_populations())
+print(compare_populations().to_string(index = False))
 
 def train_model(df):    
     # 1. Feature Engineering (Percentages)
