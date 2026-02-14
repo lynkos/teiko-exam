@@ -1,6 +1,6 @@
 <div align="center">
     <h1>Teiko Technical Exam</h1>
-    <img alt="Python" src="https://img.shields.io/static/v1?label=Language&style=flat&message=Python+3.14.3&logo=python&color=c7a228&labelColor=393939&logoColor=4f97d1">
+    <img alt="Python" src="https://img.shields.io/static/v1?label=Language&style=flat&message=Python+3.14.0&logo=python&color=c7a228&labelColor=393939&logoColor=4f97d1">
     <img alt="SQLite" src="https://img.shields.io/static/v1?label=Libraries&style=flat&message=SQLite&logo=sqlite&color=003B57&labelColor=393939&logoColor=003B57">
     <img alt="Shell" src="https://img.shields.io/static/v1?label=Shell&style=flat&message=Bash&logo=gnu+bash&color=4EAA25&labelColor=393939&logoColor=4EAA25">
     <br>
@@ -12,7 +12,7 @@
 - [x] [Python 3](https://www.python.org/downloads)
 
 ## Installation
-1. Make sure [Python 3](https://www.python.org) is installed
+1. Confirm [Python 3](https://www.python.org) is installed
    ```sh
    python3 --version
    ```
@@ -22,8 +22,8 @@
    git clone https://github.com/lynkos/teiko-exam.git && cd teiko-exam
    ```
 
-3. Create a virtual environment and activate it
-   - Unix:
+3. Create virtual environment
+   - UNIX:
      ```sh
      python3 -m venv .venv
      ```
@@ -33,7 +33,7 @@
      ```
 
 4. Activate virtual environment
-   - Unix:
+   - UNIX:
      ```sh
      source .venv/bin/activate
      ```
@@ -51,16 +51,20 @@
 ### Part 1: Data Management
 Set up the SQLite database `subjects.db` and load the data from [`cell-count.csv`](cell-count.csv)
    ```sh
-   python3 load_data.py
+   python load_data.py
    ```
 
 ### Part 2: Initial Analysis - Data Overview
-Run the data analysis script to generate insights and visualizations
+Generate and print the summary table
    ```sh
-   python3 data_analysis.py
+   python data_analysis.py
    ```
 
 ### Part 3: Statistical Analysis
+Run the stats analysis script to generate insights and visualizations
+   ```sh
+   python stats_analysis.py
+   ```
 
 ### Part 4: Data Subset Analysis
 
@@ -75,9 +79,12 @@ Run the data analysis script to generate insights and visualizations
 ```plaintext
 .
 ├── .gitignore
+├── app.py
 ├── cell-count.csv
 ├── data_analysis.py
 ├── load_data.py
 ├── README.md
+├── requirements.txt
+├── stats_analysis.py
 └── subjects.db
 ```
