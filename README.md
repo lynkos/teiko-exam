@@ -22,6 +22,31 @@
    git clone https://github.com/lynkos/teiko-exam.git && cd teiko-exam
    ```
 
+3. Create a virtual environment and activate it
+   - Unix:
+     ```sh
+     python3 -m venv .venv
+     ```
+   - Windows:
+     ```sh
+     py -m venv .venv
+     ```
+
+4. Activate virtual environment
+   - Unix:
+     ```sh
+     source .venv/bin/activate
+     ```
+   - Windows:
+     ```sh
+     .venv\Scripts\activate
+     ```
+
+5. Install dependencies
+  ```sh
+  pip install -r requirements.txt
+  ```
+
 ## Usage
 ### Part 1: Data Management
 Set up the SQLite database `subjects.db` and load the data from [`cell-count.csv`](cell-count.csv)
