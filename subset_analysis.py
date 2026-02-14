@@ -20,7 +20,7 @@ DATA_FRAME_FILTER = pandas.read_sql_query(
 
 # How many samples from each project
 DATA_FRAME_PROJECTS = pandas.read_sql_query(
-    f"""SELECT subj.project, COUNT(t.sample) AS samples_per_project
+    f"""SELECT subj.project, COUNT(t.sample) AS 'Number of Samples'
         FROM samples t
         JOIN subjects subj ON t.subject = subj.subject
         WHERE t.sample_type = 'PBMC'
@@ -33,7 +33,7 @@ DATA_FRAME_PROJECTS = pandas.read_sql_query(
 
 # How many subjects were responders/non-responders 
 DATA_FRAME_RESPONDERS = pandas.read_sql_query(
-    f"""SELECT subj.response, COUNT(DISTINCT t.subject) AS response_count
+    f"""SELECT subj.response, COUNT(DISTINCT t.subject) AS 'Count'
         FROM samples t
         JOIN subjects subj ON t.subject = subj.subject
         WHERE t.sample_type = 'PBMC'
@@ -46,7 +46,7 @@ DATA_FRAME_RESPONDERS = pandas.read_sql_query(
 
 # How many subjects were males/females
 DATA_FRAME_SEXES = pandas.read_sql_query(
-    f"""SELECT subj.sex, COUNT(DISTINCT t.subject) AS sex_count
+    f"""SELECT subj.sex, COUNT(DISTINCT t.subject) AS 'Count'
         FROM samples t
         JOIN subjects subj ON t.subject = subj.subject
         WHERE t.sample_type = 'PBMC'

@@ -8,8 +8,8 @@ from data_analysis import SUMMARY_TABLE_NAME, DATABASE, CELL_TYPES
 connection = connect(DATABASE)
 
 # Summary table
-DATA_FRAME_summary = pandas.read_sql_query(
-    f"""SELECT sample, total_count, population, count, percentage
+DATA_FRAME_SUMMARY = pandas.read_sql_query(
+    f"""SELECT sample, total_count AS 'Total Count', population, count, percentage
         FROM {SUMMARY_TABLE_NAME}
     """, connection
 )
