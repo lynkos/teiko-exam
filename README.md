@@ -46,9 +46,9 @@
      ```
 
 5. Install dependencies
-  ```sh
-  pip install -r requirements.txt
-  ```
+   ```sh
+   pip install -r requirements.txt
+   ```
 
 ## Usage
 ### Part 1: Data Management
