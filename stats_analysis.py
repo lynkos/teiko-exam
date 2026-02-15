@@ -1,25 +1,26 @@
-import pandas
-import scipy.stats as stats
+from pandas import DataFrame, read_sql_query
+from scipy.stats import mannwhitneyu
+from sqlite3 import connect
+from data_analysis import DATABASE
+from load_data import CELL_TYPES
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
-from sqlite3 import connect
-from data_analysis import SUMMARY_TABLE_NAME, DATABASE, CELL_TYPES
 
 connection = connect(DATABASE)
 
 # Summary table
-DATA_FRAME_SUMMARY = pandas.read_sql_query(
+DATA_FRAME_SUMMARY = read_sql_query(
     f"""SELECT sample, total_count AS 'Total Count', population, count, percentage
-        FROM {SUMMARY_TABLE_NAME}
+        FROM summary
     """, connection
 )
 
 # Population relative frequencies comparing responders
 # versus non-responders using a boxplot for each
 # immune cell population
-DATA_FRAME = pandas.read_sql_query(
+RESP_FREQ_DF = read_sql_query(
     f"""SELECT s.population, s.percentage, subj.response, t.subject
-        FROM {SUMMARY_TABLE_NAME} s
+        FROM summary s
         JOIN samples t ON s.sample = t.sample
         JOIN subjects subj ON t.subject = subj.subject
         WHERE subj.response IN ('yes', 'no')
@@ -29,9 +30,9 @@ DATA_FRAME = pandas.read_sql_query(
 # Population relative frequencies comparing responders
 # versus non-responders using a boxplot for each
 # immune cell population
-DATA_FRAME_FILTERED_BOXPLOT = pandas.read_sql_query(
+DATA_FRAME_FILTERED_BOXPLOT = read_sql_query(
     f"""SELECT s.population, s.percentage, subj.response, t.subject
-        FROM {SUMMARY_TABLE_NAME} s
+        FROM summary s
         JOIN samples t ON s.sample = t.sample
         JOIN subjects subj ON t.subject = subj.subject
         WHERE subj.response IN ('yes', 'no')
@@ -49,10 +50,17 @@ DATA_FRAME_FILTERED_BOXPLOT = pandas.read_sql_query(
 # Response information can be found in column "response",
 # with value "yes" for responding and value "no" for non-responding.
 # Please only include PBMC samples.
-DATA_FRAME2 = pandas.read_sql_query(
-    f"""SELECT DISTINCT s.sample, s.total_count, b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte, t.subject, subj.response
-        FROM {SUMMARY_TABLE_NAME} s
-        JOIN samples t ON s.sample = t.sample
+DATA_FRAME2 = read_sql_query(
+    f"""SELECT DISTINCT 
+            t.sample, 
+            t.b_cell, 
+            t.cd8_t_cell, 
+            t.cd4_t_cell, 
+            t.nk_cell, 
+            t.monocyte,
+            t.subject, 
+            subj.response
+        FROM samples t
         JOIN subjects subj ON t.subject = subj.subject
         WHERE t.sample_type = 'PBMC'
         AND subj.condition = 'melanoma'
@@ -64,7 +72,7 @@ DATA_FRAME2 = pandas.read_sql_query(
 connection.close()
 
 # TEST
-def compare_populations(input_df = DATA_FRAME_FILTERED_BOXPLOT):
+def compare_populations(input_df: DataFrame = DATA_FRAME_FILTERED_BOXPLOT):
     """
     Compare cell populations between responders and non-responders
     by first averaging samples within each subject to handle repeated measures.
@@ -89,7 +97,7 @@ def compare_populations(input_df = DATA_FRAME_FILTERED_BOXPLOT):
         no = df_pop[df_pop['response'] == 'no']['percentage']
         
         # Perform Mann-Whitney U test on subject-level averages
-        u_statistic, p_val = stats.mannwhitneyu(yes, no, alternative='two-sided')
+        u_statistic, p_val = mannwhitneyu(yes, no, alternative='two-sided')
         
         # Calculate descriptive statistics
         median_yes = yes.median()
@@ -114,65 +122,89 @@ def compare_populations(input_df = DATA_FRAME_FILTERED_BOXPLOT):
             'Effect Size (r)': round(rank_biserial, 5)
         })
 
-    results_df = pandas.DataFrame(results)
+    results_df = DataFrame(results)
     
     return results_df
 
-COMPARISON = compare_populations(DATA_FRAME)
+COMPARISON = compare_populations(RESP_FREQ_DF)
 COMPARISON_FILTER = compare_populations(DATA_FRAME_FILTERED_BOXPLOT)
 
-def train_model(df):    
-    # 1. Feature Engineering (Percentages)
-    X = pandas.DataFrame()
+def train_and_evaluate_model(data_frame: DataFrame):    
+    """
+    Train model with proper cross-validation to estimate real-world performance.
+    """
+    # 1. Calculate total count for each subject (sum of all cell types)
+    data_frame['total_count'] = data_frame[CELL_TYPES].sum(axis=1)
+    
+    # 2. Feature Engineering: Convert to percentages
+    X = DataFrame()
     for col in CELL_TYPES:
-        X[f"{col}_pct"] = (df[col] / df['total_count']) * 100
+        X[f"{col}_pct"] = (data_frame[col] / data_frame['total_count']) * 100
     
-    # 2. Target Encoding
+    # 3. Target Encoding
     le = LabelEncoder()
-    y = le.fit_transform(df['response'])
-
-    # 3. Train Classifier
-    clf = RandomForestClassifier(n_estimators=100, random_state=42)
-
+    y = le.fit_transform(data_frame['response'])
+            
+    # 5. Train and evaluate with cross-validation
+    clf = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=3)
+            
+    # 6. Train final model on ALL data for deployment
     clf.fit(X, y)
-    
+        
     return clf, le
 
-def predict_new_sample(model, encoder, feature_cols, new_data):
+def predict_new_sample(model: RandomForestClassifier, encoder: LabelEncoder, feature_cols: list[str], new_data: dict[str, int]):
     """
-    Takes a dictionary of raw counts and returns a prediction.
-    new_data = {'total_count': 100000, 'b_cell': 5000, ...}
+    Predict response for a new patient's PBMC sample.    
     """
     # 1. Convert input to DataFrame
-    sample_df = pandas.DataFrame([new_data])
+    sample_df = DataFrame([new_data])
     
-    # 2. Calculate percentages exactly as done during training
-    X_input = pandas.DataFrame()
+    # 2. Calculate total count
+    sample_df['total_count'] = sample_df[feature_cols].sum(axis=1)
+    
+    # 3. Calculate percentages exactly as done during training
+    X_input = DataFrame()
     for col in feature_cols:
         X_input[f"{col}_pct"] = (sample_df[col] / sample_df['total_count']) * 100
     
-    # 3. Get Prediction
+    # 4. Get prediction and probabilities
     pred_code = model.predict(X_input)[0]
     prob = model.predict_proba(X_input)[0]
     
-    # 4. Decode (0/1 -> no/yes)
+    # 5. Decode prediction (0/1 -> no/yes)
     label = encoder.inverse_transform([pred_code])[0]
+    
+    # Get the probability for the predicted class
+    predicted_class_prob = prob[pred_code]
     
     return {
         'prediction': label,
-        'confidence': round(max(prob) * 100, 2)
+        'confidence': round(predicted_class_prob * 100, 2),
+        'probability_no': round(prob[0] * 100, 2),
+        'probability_yes': round(prob[1] * 100, 2)
     }
 
-clf, le = train_model(DATA_FRAME2)
+# Handle multiple samples per subject by averaging
+# This prevents data leakage during cross-validation
+DATA_FRAME_SUBJECT = DATA_FRAME2.groupby(['subject', 'response'])[CELL_TYPES].mean().reset_index()
 
-new_patient_data = {
-    'total_count': 95000,
-    'b_cell': 10000,
-    'cd8_t_cell': 21000,
-    'cd4_t_cell': 37000,
-    'nk_cell': 14000,
-    'monocyte': 13000
-}
+if __name__ == "__main__":
+    # Train and evaluate the model
+    clf, le = train_and_evaluate_model(DATA_FRAME_SUBJECT)
 
-result = predict_new_sample(clf, le, CELL_TYPES, new_patient_data)
-print(f"Prediction: {result['prediction']} ({result['confidence']}% confidence)")
+    # Test prediction on new patient
+    new_patient_data = {
+        'b_cell': 10000,
+        'cd8_t_cell': 21000,
+        'cd4_t_cell': 37000,
+        'nk_cell': 14000,
+        'monocyte': 13000
+    }
+
+    result = predict_new_sample(clf, le, CELL_TYPES, new_patient_data)
+    print(f"\n=== New Patient Prediction ===")
+    print(f"Prediction: {result['prediction']}")
+    print(f"Confidence: {result['confidence']}%")
+    print(f"P(no response): {result['probability_no']}%")
+    print(f"P(yes response): {result['probability_yes']}%")
