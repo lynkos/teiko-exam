@@ -10,7 +10,7 @@ connection = connect(DATABASE)
 
 # Summary table
 DATA_FRAME_SUMMARY = read_sql_query(
-    f"""SELECT sample, total_count AS 'Total Count', population, count, percentage
+    f"""SELECT sample, population AS 'Cell Population', count, total_count AS 'Total Count', percentage AS 'Relative Frequency (%)'
         FROM summary
     """, connection
 )
@@ -118,9 +118,9 @@ def compare_populations(input_df: DataFrame = DATA_FRAME_FILTERED_BOXPLOT) -> Da
         
         results.append({
             'Cell Population': pop,
-            'Median % Responders': round(median_yes, 5),
-            'Median % Non-Responders': round(median_no, 5),
-            'Median Difference': round(median_diff, 5),
+            'Median Responders (%)': round(median_yes, 5),
+            'Median Non-Responders (%)': round(median_no, 5),
+            'Median Difference (%)': round(median_diff, 5),
             'P-Value': round(p_val, 5),
             'Significant Difference': significant_uncorrected,
             'Effect Size (r)': round(rank_biserial, 5)
