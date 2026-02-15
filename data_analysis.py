@@ -1,14 +1,8 @@
 from sqlite3 import Connection, connect
 from uuid import uuid4
-from load_data import CELL_TYPES
+from load_data import CELL_TYPES, DATABASE
 
-SUMMARY_TABLE_NAME: str = "summary_table"
-"""Name of summary table"""
-
-DATABASE: str = "subjects.db"
-"""SQLite database path"""
-
-def populate_summary_table(connection: Connection, table: str = SUMMARY_TABLE_NAME) -> None:
+def populate_summary_table(connection: Connection) -> None:
     """
     Populate summary table with the following for each sample (i.e. row):
         - id: Unique ID for each row
@@ -20,7 +14,6 @@ def populate_summary_table(connection: Connection, table: str = SUMMARY_TABLE_NA
 
     Args:
         connection (Connection): Database connection
-        table (str, optional): Table name; defaults to SUMMARY_TABLE_NAME
     """
     cursor = connection.cursor()
 
@@ -53,7 +46,7 @@ def populate_summary_table(connection: Connection, table: str = SUMMARY_TABLE_NA
             # 5. Cell count for population
             # 6. Relative frequency of cell population in sample
             cursor.execute(f"""
-                INSERT INTO {table}
+                INSERT INTO summary
                 (id, sample, total_count, population, count, percentage)
                 VALUES (?, ?, ?, ?, ?, ?)
             """, (
@@ -65,48 +58,13 @@ def populate_summary_table(connection: Connection, table: str = SUMMARY_TABLE_NA
                     frequency
                 )
             )
-            print(f"Inserted sample '{sample_id}' into {table}")
+            print(f"Inserted sample '{sample_id}' into 'summary' table")
 
     connection.commit()
 
-    print(f"Finished populating {table} table in database")
+    print(f"Finished populating 'summary' table")
 
-def create_summary_table(connection: Connection, table: str = SUMMARY_TABLE_NAME):
-    """
-    Create summary table with these columns for each sample:
-        - id: Unique ID for each row
-        - sample: Sample ID (i.e. 'sample' column in .csv)
-        - total_count: Sample's total cell count (i.e. sum of all cell population counts for that sample)
-        - population: Immune cell population's name (e.g. b_cell, cd8_t_cell, etc.)
-        - count: Cell count
-        - percentage: Relative frquency of the cell population (in percentage)
-
-    Args:
-        connection (Connection): Database connection
-        table (str, optional): Table name; defaults to SUMMARY_TABLE_NAME
-    """
-    cursor = connection.cursor()
-
-    # Enable foreign key constraints
-    cursor.execute("PRAGMA foreign_keys = ON;")
-
-    # Create summary table
-    cursor.execute(f"""
-        CREATE TABLE IF NOT EXISTS {table} (
-            id TEXT PRIMARY KEY,
-            sample TEXT,
-            total_count INTEGER,
-            population TEXT,
-            count INTEGER,
-            percentage REAL,
-            FOREIGN KEY (sample) REFERENCES samples (sample)
-        )
-    """)
-    print(f"Added '{table}' table to database")
-
-    connection.commit()
-
-def main(database: str = DATABASE, summary_table: str = SUMMARY_TABLE_NAME) -> None:
+def main(database: str = DATABASE) -> None:
     """
     Main function for Part 2: Initial Analysis - Data Overview
         1. Create summary table in database
@@ -114,16 +72,12 @@ def main(database: str = DATABASE, summary_table: str = SUMMARY_TABLE_NAME) -> N
 
     Args:
         database (str, optional): Name of the SQLite database file; defaults to DATABASE
-        summary_table (str, optional): Summary table name; defaults to SUMMARY_TABLE_NAME
     """
     try:
         with connect(database) as connection:
-            print(f"Creating {summary_table} table in '{database}'")
-            create_summary_table(connection, summary_table)
+            populate_summary_table(connection)
+            print(f"Populated 'summary' table in '{database}'")
 
-            print(f"Populated {summary_table} table in '{database}'")
-            populate_summary_table(connection, summary_table)
-                        
     except Exception as e:
         print(f"An error occurred in main: {e}")
 

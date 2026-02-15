@@ -1,10 +1,14 @@
 from sqlite3 import Connection, Cursor, connect
 from csv import DictReader
 
-# CONSTANTS
 DATABASE: str = "subjects.db"
+"""SQLite database path"""
+
 CSV: str = "cell-count.csv"
+"""CSV file path"""
+
 CELL_TYPES = [ "b_cell", "cd8_t_cell", "cd4_t_cell", "nk_cell", "monocyte" ]
+"""List of cell population column names in database"""
 
 def validate_db(cursor: Cursor, table: str, column: str, value: str) -> bool:
     """
@@ -24,7 +28,7 @@ def validate_db(cursor: Cursor, table: str, column: str, value: str) -> bool:
 
 def load_csv(connection: Connection, csv: str = CSV) -> None:
     """
-    Load data from a CSV file into the database
+    Load data from a CSV file into the 'subjects' and 'samples' tables in the database
     
     Args:
         connection (Connection): Database connection
@@ -58,7 +62,7 @@ def load_csv(connection: Connection, csv: str = CSV) -> None:
                         row["response"] if row["response"] else None
                     )
                 )
-                print(f"Recorded '{subject}' in 'subjects' table in database")
+                print(f"Recorded '{subject}' into 'subjects' table")
 
             # Extract value of 'sample' column in current row
             sample = row["sample"]
@@ -82,7 +86,7 @@ def load_csv(connection: Connection, csv: str = CSV) -> None:
                         int(row["monocyte"])
                     )
                 )
-                print(f"Recorded '{sample}' in 'samples' table in database")
+                print(f"Recorded '{sample}' into 'samples' table")
 
     connection.commit()
 
@@ -128,6 +132,21 @@ def create_database(connection: Connection) -> None:
         )
     """)
     print("Added 'samples' table to database")
+
+    # Create 'summary' table, which will be populated in `stats_analysis.py`
+    # for Part 2: Initial Analysis - Data Overview
+    cursor.execute(f"""
+        CREATE TABLE IF NOT EXISTS summary (
+            id TEXT PRIMARY KEY,
+            sample TEXT,
+            total_count INTEGER,
+            population TEXT,
+            count INTEGER,
+            percentage REAL,
+            FOREIGN KEY (sample) REFERENCES samples (sample)
+        )
+    """)
+    print(f"Added 'summary' table to database")
 
     # Indexing for faster queries
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_samples_subject ON samples(subject)")
