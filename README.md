@@ -11,6 +11,11 @@
     <img alt="Repo Size" src="https://img.shields.io/github/repo-size/lynkos/teiko-exam?style=flat&label=Repo+Size&labelColor=393939&color=ff62b1">
 </div>
 
+> [!IMPORTANT]
+> Even though I submitted my solution before the deadline, I continue to make changes (even after the deadline has passed).
+> 
+> If you see this message, it means that my solution is still being updated. Please check back later for the final version (i.e. once I remove this message), which will ideally be by Monday.
+
 ## Requirements
 - [x] [Python 3](https://www.python.org/downloads)
 
