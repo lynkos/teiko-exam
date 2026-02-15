@@ -56,28 +56,34 @@
    ```
 
 ## Usage
+> [!IMPORTANT]
+> Regarding the scripts in [**Part 2: Initial Analysis - Data Overview**](#part-2-initial-analysis---data-overview), [**Part 3: Statistical Analysis**](#part-3-statistical-analysis), and [**Part 4: Data Subset Analysis**](#part-4-data-subset-analysis):
+> * The output data for each of those scripts is displayed in the [web dashboard](https://be97c6b7-cf30-4e8b-958d-837de4ee4a72.plotly.app) (see [**Dashboard**](#dashboard) section for more details).
+> * Therefore, running the scripts may not be necessary since it's already visualized in the [web dashboard](https://be97c6b7-cf30-4e8b-958d-837de4ee4a72.plotly.app).
+> * Alternatively, if you want to see the output in the terminal, you can run the scripts.
+
 ### Part 1: Data Management
-Set up the SQLite database `subjects.db` and load the data from [`cell-count.csv`](cell-count.csv)
+Set up the SQLite database `subjects.db` and load the data from [`cell-count.csv`](cell-count.csv) into `samples` and `subjects` tables
    ```sh
    python load_data.py
    ```
 
 ### Part 2: Initial Analysis - Data Overview
-Generate and print the summary table
+Generate the summary table and add to `subjects.db` as `summary_table` table
    ```sh
    python data_analysis.py
    ```
 
 ### Part 3: Statistical Analysis
-Run the stats analysis script to generate insights and visualizations
+Run the stats analysis script for insights and visualizations
    ```sh
    python stats_analysis.py
    ```
 
 ### Part 4: Data Subset Analysis
-Run `app.py` for data subset analysis (i.e. visualizes data from [`subset_analysis.py`](subset_analysis.py))
+Run the subset analysis
    ```sh
-   python app.py
+   python subset_analysis.py
    ```
 
 ## Database Schema
@@ -88,7 +94,15 @@ Run `app.py` for data subset analysis (i.e. visualizes data from [`subset_analys
 ## Overview
 
 ## Dashboard
-<span style="font-size: 1.5em; font-weight: bold;"><a href="https://be97c6b7-cf30-4e8b-958d-837de4ee4a72.plotly.app" target="_blank" title="">Interactive dashboard for Teiko Exam</a></span>
+<div align="center"><span style="font-size: 1.5em; font-weight: bold; text-decoration: underline;"><a href="https://be97c6b7-cf30-4e8b-958d-837de4ee4a72.plotly.app" target="_blank" title="Interactive dashboard hosted by Plotly">Interactive dashboard for Teiko Exam</a></span></div>
+
+> [!NOTE]
+> This dashboard has been generated with the [`app.py`](app.py) script and uploaded to [Plotly Cloud](https://plotly.com/cloud). You can click the link above to view the dashboard, which includes visualizations for all parts of the exam (except [**Part 1: Data Management**](#part-1-data-management)).
+> 
+> To run the dashboard locally:
+> ```sh
+> python app.py
+> ```
 
 ## Repository Structure
 ```plaintext
