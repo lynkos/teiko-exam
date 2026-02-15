@@ -8,7 +8,7 @@ connection = connect(DATABASE)
 # (time_from_treatment_start is 0) from patients
 # who have been treated with miraclib
 DATA_FRAME_FILTER = pandas.read_sql_query(
-    f"""SELECT t.sample, t.subject
+    f"""SELECT t.sample
         FROM samples t
         JOIN subjects subj ON t.subject = subj.subject
         WHERE t.sample_type = 'PBMC'

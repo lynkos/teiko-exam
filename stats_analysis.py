@@ -26,6 +26,21 @@ DATA_FRAME = pandas.read_sql_query(
     """, connection
 )
 
+# Population relative frequencies comparing responders
+# versus non-responders using a boxplot for each
+# immune cell population
+DATA_FRAME_FILTERED_BOXPLOT = pandas.read_sql_query(
+    f"""SELECT s.population, s.percentage, subj.response, t.subject
+        FROM {SUMMARY_TABLE_NAME} s
+        JOIN samples t ON s.sample = t.sample
+        JOIN subjects subj ON t.subject = subj.subject
+        WHERE subj.response IN ('yes', 'no')
+        AND t.sample_type = 'PBMC'
+        AND subj.condition = 'melanoma'
+        AND subj.treatment = 'miraclib'
+    """, connection
+)
+
 # Compare the differences in cell population relative frequencies of
 # melanoma patients receiving miraclib who respond (responders)
 # versus those who do not (non-responders), with the overarching
@@ -49,25 +64,62 @@ DATA_FRAME2 = pandas.read_sql_query(
 connection.close()
 
 # TEST
-def compare_populations():
-    populations = DATA_FRAME['population'].unique()
+def compare_populations(input_df = DATA_FRAME_FILTERED_BOXPLOT):
+    """
+    Compare cell populations between responders and non-responders
+    by first averaging samples within each subject to handle repeated measures.
+    """
+        
+    # Average the percentages for each subject within each population
+    # This collapses multiple samples per subject down to one value per subject
+    df_averaged = input_df.groupby(
+        ['subject', 'population', 'response'], 
+        as_index=False
+    )['percentage'].mean()
+    
+    populations = df_averaged['population'].unique()
     results = []
+    
+    alpha = 0.05
 
     for pop in populations:
-        df_pop = DATA_FRAME[DATA_FRAME['population'] == pop]
+        # Filter for this specific cell population
+        df_pop = df_averaged[df_averaged['population'] == pop]
         
+        # Separate by response status
+        # Now each value represents one subject's average
         yes = df_pop[df_pop['response'] == 'yes']['percentage']
         no = df_pop[df_pop['response'] == 'no']['percentage']
-
-        _, p_val = stats.mannwhitneyu(yes, no)
+        
+        # Perform Mann-Whitney U test on subject-level averages
+        u_statistic, p_val = stats.mannwhitneyu(yes, no, alternative='two-sided')
+        
+        # Calculate descriptive statistics
+        median_yes = yes.median()
+        median_no = no.median()
+        median_diff = median_yes - median_no
+        
+        # Calculate effect size
+        n_yes = len(yes)  # Number of unique subjects who responded
+        n_no = len(no)    # Number of unique subjects who didn't respond
+        rank_biserial = 1 - (2 * u_statistic) / (n_yes * n_no)
+        
+        # Determine significance
+        significant_uncorrected = "Yes" if p_val < alpha else "No"
         
         results.append({
             'Cell Population': pop,
-            'P-Value': round(p_val, 3),
-            'Significant Difference': p_val < 0.05
+            'Median % Responders': round(median_yes, 5),
+            'Median % Non-Responders': round(median_no, 5),
+            'Median Difference': round(median_diff, 5),
+            'P-Value': round(p_val, 5),
+            'Significant': significant_uncorrected,
+            'Effect Size (r)': round(rank_biserial, 5)
         })
 
-    return pandas.DataFrame(results)
+    results_df = pandas.DataFrame(results)
+    
+    return results_df
 
 COMPARISON = compare_populations()
 

@@ -1,7 +1,7 @@
 from dash import Dash, html, dcc
 import dash_ag_grid as dag
 import plotly.express as px
-from stats_analysis import DATA_FRAME, COMPARISON, DATA_FRAME_SUMMARY, DATA_FRAME2
+from stats_analysis import DATA_FRAME, COMPARISON, DATA_FRAME_SUMMARY, DATA_FRAME2, DATA_FRAME_FILTERED_BOXPLOT
 from subset_analysis import DATA_FRAME_PROJECTS, DATA_FRAME_RESPONDERS, DATA_FRAME_SEXES, DATA_FRAME_FILTER
 
 # pip install "dash[cloud]"
@@ -26,14 +26,29 @@ app.layout = [
             style = { 'textAlign': 'center', 'fontSize': HEADER_SIZE }),
     
     # BOXPLOT
-    dcc.Graph(figure = px.box(DATA_FRAME, x = "population", y = "percentage", color = "response", title = "Relative frequencies of responders vs. non-responders for each cell population")),
+    dcc.Graph(figure = px.box(DATA_FRAME,
+                              x = "population",
+                              y = "percentage",
+                              color = "response",
+                              title = "Responders vs. Non-Responders",
+                              subtitle = "Relative frequencies of responders vs. non-responders for each cell population"
+                            )
+              ),
+
+    dcc.Graph(figure = px.box(DATA_FRAME_FILTERED_BOXPLOT,
+                              x = "population",
+                              y = "percentage",
+                              color = "response",
+                              title = "Filtered Responders vs. Non-Responders",
+                              subtitle = "Relative frequencies of melanoma patients receiving miraclib who respond vs. those who do not for each cell population. Only PBMC samples included."
+                            )
+              ),
 
     html.H2(children = "Differences in relative frequencies between responders vs. non-responders for each cell population",
             style = { 'textAlign': 'center', 'fontSize': FONT_SIZE }),
     dag.AgGrid(
         rowData = COMPARISON.to_dict("records"),
         dashGridOptions = { "domLayout": "autoHeight" },
-        columnSize = "responsiveSizeToFit",
         columnDefs = [ { "field": i } for i in COMPARISON.columns ]
     ),
 
