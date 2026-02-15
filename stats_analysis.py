@@ -18,7 +18,7 @@ DATA_FRAME_SUMMARY = pandas.read_sql_query(
 # versus non-responders using a boxplot for each
 # immune cell population
 DATA_FRAME = pandas.read_sql_query(
-    f"""SELECT s.population, s.percentage, subj.response
+    f"""SELECT s.population, s.percentage, subj.response, t.subject
         FROM {SUMMARY_TABLE_NAME} s
         JOIN samples t ON s.sample = t.sample
         JOIN subjects subj ON t.subject = subj.subject
@@ -121,7 +121,7 @@ def compare_populations(input_df = DATA_FRAME_FILTERED_BOXPLOT):
     
     return results_df
 
-COMPARISON = compare_populations()
+COMPARISON = compare_populations(DATA_FRAME)
 
 def train_model(df):    
     # 1. Feature Engineering (Percentages)
