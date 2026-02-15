@@ -57,4 +57,19 @@ DATA_FRAME_SEXES = pandas.read_sql_query(
     """, connection
 )
 
+# Get number of b_cells for all males AND melanoma AND t = 0 AND responds
+DF = pandas.read_sql_query(
+    f"""SELECT t.b_cell
+        FROM samples t
+        JOIN subjects subj ON t.subject = subj.subject
+        WHERE t.time_from_treatment_start = 0
+        AND subj.condition = 'melanoma'
+        AND subj.sex = 'M'
+        AND subj.response = 'yes'
+    """, connection
+)
+
+avg_b_cells = DF['b_cell'].mean()
+print("Average number of B cells for Melanoma males responders at time = 0 is:", avg_b_cells)
+
 connection.close()
