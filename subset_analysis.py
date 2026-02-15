@@ -1,4 +1,4 @@
-import pandas
+from pandas import read_sql_query
 from sqlite3 import connect
 from data_analysis import DATABASE
 
@@ -7,7 +7,7 @@ connection = connect(DATABASE)
 # Identify all melanoma PBMC samples at baseline
 # (time_from_treatment_start is 0) from patients
 # who have been treated with miraclib
-DATA_FRAME_FILTER = pandas.read_sql_query(
+DATA_FRAME_FILTER = read_sql_query(
     f"""SELECT t.sample
         FROM samples t
         JOIN subjects subj ON t.subject = subj.subject
@@ -21,7 +21,7 @@ print("1. All melanoma PBMC samples at baseline from patients treated with mirac
 print(DATA_FRAME_FILTER)
 
 # How many samples from each project
-DATA_FRAME_PROJECTS = pandas.read_sql_query(
+DATA_FRAME_PROJECTS = read_sql_query(
     f"""SELECT subj.project, COUNT(t.sample) AS 'Number of Samples'
         FROM samples t
         JOIN subjects subj ON t.subject = subj.subject
@@ -36,7 +36,7 @@ print("\n2. Among the previously filtered samples, number of samples from each p
 print(DATA_FRAME_PROJECTS)
 
 # How many subjects were responders/non-responders 
-DATA_FRAME_RESPONDERS = pandas.read_sql_query(
+DATA_FRAME_RESPONDERS = read_sql_query(
     f"""SELECT subj.response, COUNT(DISTINCT t.subject) AS 'Count'
         FROM samples t
         JOIN subjects subj ON t.subject = subj.subject
@@ -51,7 +51,7 @@ print("\n3. Among the previously filtered samples, number of subjects who were r
 print(DATA_FRAME_RESPONDERS)
 
 # How many subjects were males/females
-DATA_FRAME_SEXES = pandas.read_sql_query(
+DATA_FRAME_SEXES = read_sql_query(
     f"""SELECT subj.sex, COUNT(DISTINCT t.subject) AS 'Count'
         FROM samples t
         JOIN subjects subj ON t.subject = subj.subject
@@ -66,7 +66,7 @@ print("\n4. Among the previously filtered samples, number of subjects who were m
 print(DATA_FRAME_SEXES)
 
 # Get number of b_cells for all males AND melanoma AND t = 0 AND responds
-DF = pandas.read_sql_query(
+DF = read_sql_query(
     f"""SELECT t.b_cell
         FROM samples t
         JOIN subjects subj ON t.subject = subj.subject
