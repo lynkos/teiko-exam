@@ -9,6 +9,8 @@ from subset_analysis import DATA_FRAME_PROJECTS, DATA_FRAME_RESPONDERS, DATA_FRA
 # CONSTANTS
 HEADER_SIZE = 25
 FONT_SIZE = 18
+SMALL_TABLE_WIDTH = "30rem"
+THEME = "themeBalham"
 
 app = Dash(__name__, title = "Teiko Exam - Data Analysis")
 
@@ -19,7 +21,9 @@ app.layout = [
             style = { 'textAlign': 'center', 'fontSize': FONT_SIZE }),
     dag.AgGrid(
         rowData = DATA_FRAME_SUMMARY.to_dict("records"),
-        columnDefs = [ { "field": i } for i in DATA_FRAME_SUMMARY.columns ]
+        columnSize = "responsiveSizeToFit",
+        columnDefs = [ { "field": i, "filter": True } for i in DATA_FRAME_SUMMARY.columns ],
+        dashGridOptions = { "theme": THEME, "pagination": False },
     ),
 
     html.H1(children = "Part 3: Statistical Analysis",
@@ -41,8 +45,8 @@ app.layout = [
             style = { 'textAlign': 'center', 'fontSize': (FONT_SIZE * 0.9) }),
     dag.AgGrid(
         rowData = COMPARISON.to_dict("records"),
-        dashGridOptions = { "domLayout": "autoHeight" },
-        columnDefs = [ { "field": i } for i in COMPARISON.columns ]
+        dashGridOptions = { "domLayout": "autoHeight", "theme": THEME },
+        columnDefs = [ { "field": i, "filter": True } for i in COMPARISON.columns ],
     ),
 
     dcc.Graph(figure = px.box(DATA_FRAME_FILTERED_BOXPLOT,
@@ -60,8 +64,8 @@ app.layout = [
             style = { 'textAlign': 'center', 'fontSize': (FONT_SIZE * 0.9) }),
     dag.AgGrid(
         rowData = COMPARISON_FILTER.to_dict("records"),
-        dashGridOptions = { "domLayout": "autoHeight" },
-        columnDefs = [ { "field": i } for i in COMPARISON_FILTER.columns ]
+        dashGridOptions = { "domLayout": "autoHeight", "theme": THEME },
+        columnDefs = [ { "field": i, "filter": True } for i in COMPARISON_FILTER.columns ]
     ),
 
     html.H1(children = "Part 4: Data Subset Analysis",
@@ -72,15 +76,18 @@ app.layout = [
     dag.AgGrid(
         rowData = DATA_FRAME_FILTER.to_dict("records"),
         columnSize = "responsiveSizeToFit",
-        columnDefs = [ { "field": i } for i in DATA_FRAME_FILTER.columns ]
+        style = { "width": SMALL_TABLE_WIDTH, "margin": "0 auto" },
+        columnDefs = [ { "field": i } for i in DATA_FRAME_FILTER.columns ],
+        dashGridOptions = { "theme": THEME },
     ),
 
     html.H2(children = "2. How many samples from each project",
             style = { 'textAlign': 'center', 'fontSize': FONT_SIZE }),
     dag.AgGrid(
         rowData = DATA_FRAME_PROJECTS.to_dict("records"),
-        dashGridOptions = { "domLayout": "autoHeight" },
+        dashGridOptions = { "domLayout": "autoHeight", "theme": THEME },
         columnSize = "responsiveSizeToFit",
+        style = { "width": SMALL_TABLE_WIDTH, "margin": "0 auto" },
         columnDefs = [ { "field": i } for i in DATA_FRAME_PROJECTS.columns ]
     ),
 
@@ -88,8 +95,9 @@ app.layout = [
             style = { 'textAlign': 'center', 'fontSize': FONT_SIZE }),
     dag.AgGrid(
         rowData = DATA_FRAME_RESPONDERS.to_dict("records"),
-        dashGridOptions = { "domLayout": "autoHeight" },
+        dashGridOptions = { "domLayout": "autoHeight", "theme": THEME },
         columnSize = "responsiveSizeToFit",
+        style = { "width": SMALL_TABLE_WIDTH, "margin": "0 auto" },
         columnDefs = [ { "field": i } for i in DATA_FRAME_RESPONDERS.columns ]
     ),
 
@@ -97,11 +105,12 @@ app.layout = [
             style = { 'textAlign': 'center', 'fontSize': FONT_SIZE }),
     dag.AgGrid(
         rowData = DATA_FRAME_SEXES.to_dict("records"),
-        dashGridOptions = { "domLayout": "autoHeight" },
+        dashGridOptions = { "domLayout": "autoHeight", "theme": THEME },
         columnSize = "responsiveSizeToFit",
+        style = { "width": SMALL_TABLE_WIDTH, "margin": "0 auto" },
         columnDefs = [ { "field": i } for i in DATA_FRAME_SEXES.columns ]
     )
 ]
 
 if __name__ == "__main__":
-    app.run(debug = True)
+    app.run()
