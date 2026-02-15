@@ -68,7 +68,7 @@ Set up the SQLite database `subjects.db` and load the data from [`cell-count.csv
    ```
 
 ### Part 2: Initial Analysis - Data Overview
-Generate the summary table and add to `subjects.db` as `summary_table` table
+Generate the summary table and add to `subjects.db` as `summary` table
    ```sh
    python data_analysis.py
    ```
@@ -91,7 +91,7 @@ Run the subset analysis
 My database [`subjects.db`](subjects.db) contains 3 tables:
    * `samples`: Contains information about each sample; generated in [`load_data.py`](load_data.py)
    * `subjects`: Contains information about each subject; generated in [`load_data.py`](load_data.py)
-   * `summary_table`: Contains summary statistics for each sample; generated in [`data_analysis.py`](data_analysis.py)
+   * `summary`: Contains summary statistics for each sample; generated in [`data_analysis.py`](data_analysis.py)
 
 I initially considered making a `project` table, but decided against it since there are only 3 unique projects (i.e. `proj1`, `proj2`, `proj3`) in the dataset.
 
