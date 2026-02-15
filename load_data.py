@@ -105,9 +105,9 @@ def create_database(connection: Connection) -> None:
             project TEXT,
             condition TEXT,
             age INTEGER,
-            sex TEXT CHECK(sex IN ('M', 'F')),
+            sex TEXT,
             treatment TEXT,
-            response TEXT CHECK(response IN ('yes', 'no', ''))
+            response TEXT
         )
     """)
     print("Added 'subjects' table to database")
