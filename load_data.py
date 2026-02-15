@@ -4,6 +4,7 @@ from csv import DictReader
 # CONSTANTS
 DATABASE: str = "subjects.db"
 CSV: str = "cell-count.csv"
+CELL_TYPES = [ "b_cell", "cd8_t_cell", "cd4_t_cell", "nk_cell", "monocyte" ]
 
 def validate_db(cursor: Cursor, table: str, column: str, value: str) -> bool:
     """
@@ -65,9 +66,9 @@ def load_csv(connection: Connection, csv: str = CSV) -> None:
             # Check if current row's sample data already exists in 'samples' table to avoid duplicates
             if not validate_db(cursor, "samples", "sample", sample):
                 # Insert current row's sample data into 'samples' table
-                cursor.execute("""
+                cursor.execute(f"""
                     INSERT INTO samples
-                    (sample, subject, sample_type, time_from_treatment_start, b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte)
+                    (sample, subject, sample_type, time_from_treatment_start, {', '.join(CELL_TYPES)})
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                         sample,
