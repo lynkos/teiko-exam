@@ -71,13 +71,19 @@ DATA_FRAME2 = read_sql_query(
 
 connection.close()
 
-# TEST
-def compare_populations(input_df: DataFrame = DATA_FRAME_FILTERED_BOXPLOT):
+ALPHA = 0.05
+
+def compare_populations(input_df: DataFrame = DATA_FRAME_FILTERED_BOXPLOT) -> DataFrame:
     """
     Compare cell populations between responders and non-responders
     by first averaging samples within each subject to handle repeated measures.
+
+    Args:
+        input_df (DataFrame): Input DataFrame with subject, population, response, and percentage columns
+
+    Returns:
+        DataFrame: Comparison results for each cell population
     """
-        
     # Average the percentages for each subject within each population
     # This collapses multiple samples per subject down to one value per subject
     df_averaged = input_df.groupby([ 'subject', 'population', 'response' ], as_index = False)['percentage'].mean()
@@ -85,8 +91,6 @@ def compare_populations(input_df: DataFrame = DATA_FRAME_FILTERED_BOXPLOT):
     populations = df_averaged['population'].unique()
     results = []
     
-    alpha = 0.05
-
     for pop in populations:
         # Filter for this specific cell population
         df_pop = df_averaged[df_averaged['population'] == pop]
@@ -97,7 +101,7 @@ def compare_populations(input_df: DataFrame = DATA_FRAME_FILTERED_BOXPLOT):
         no = df_pop[df_pop['response'] == 'no']['percentage']
         
         # Perform Mann-Whitney U test on subject-level averages
-        u_statistic, p_val = mannwhitneyu(yes, no, alternative='two-sided')
+        u_statistic, p_val = mannwhitneyu(yes, no, alternative = 'two-sided')
         
         # Calculate descriptive statistics
         median_yes = yes.median()
@@ -105,12 +109,12 @@ def compare_populations(input_df: DataFrame = DATA_FRAME_FILTERED_BOXPLOT):
         median_diff = median_yes - median_no
         
         # Calculate effect size
-        n_yes = len(yes)  # Number of unique subjects who responded
-        n_no = len(no)    # Number of unique subjects who didn't respond
+        n_yes = len(yes)
+        n_no = len(no)
         rank_biserial = 1 - (2 * u_statistic) / (n_yes * n_no)
         
         # Determine significance
-        significant_uncorrected = "Yes" if p_val < alpha else "No"
+        significant_uncorrected = "Yes" if p_val < ALPHA else "No"
         
         results.append({
             'Cell Population': pop,
@@ -129,50 +133,65 @@ def compare_populations(input_df: DataFrame = DATA_FRAME_FILTERED_BOXPLOT):
 COMPARISON = compare_populations(RESP_FREQ_DF)
 COMPARISON_FILTER = compare_populations(DATA_FRAME_FILTERED_BOXPLOT)
 
-def train_and_evaluate_model(data_frame: DataFrame):    
+def train_and_evaluate_model(data_frame: DataFrame) -> tuple[RandomForestClassifier, LabelEncoder]:
     """
     Train model with proper cross-validation to estimate real-world performance.
+
+    Args:
+        data_frame (DataFrame): Input DataFrame
+
+    Returns:
+        tuple[RandomForestClassifier, LabelEncoder]: Trained model and label encoder
     """
-    # 1. Calculate total count for each subject (sum of all cell types)
-    data_frame['total_count'] = data_frame[CELL_TYPES].sum(axis=1)
+    # Calculate total count for each subject (sum of all cell types)
+    data_frame['total_count'] = data_frame[CELL_TYPES].sum(axis = 1)
     
-    # 2. Feature Engineering: Convert to percentages
+    # Convert to percentages
     X = DataFrame()
     for col in CELL_TYPES:
         X[f"{col}_pct"] = (data_frame[col] / data_frame['total_count']) * 100
     
-    # 3. Target Encoding
+    # Target Encoding
     le = LabelEncoder()
     y = le.fit_transform(data_frame['response'])
             
-    # 5. Train and evaluate with cross-validation
-    clf = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=3)
+    # Train and evaluate with cross-validation
+    clf = RandomForestClassifier(n_estimators = 100, random_state = 42, max_depth = 3)
             
-    # 6. Train final model on ALL data for deployment
+    # Train final model on ALL data for deployment
     clf.fit(X, y)
         
     return clf, le
 
-def predict_new_sample(model: RandomForestClassifier, encoder: LabelEncoder, feature_cols: list[str], new_data: dict[str, int]):
+def predict_new_sample(model: RandomForestClassifier, encoder: LabelEncoder, feature_cols: list[str], new_data: dict[str, int]) -> dict:
     """
-    Predict response for a new patient's PBMC sample.    
+    Predict response for a new patient's PBMC sample.
+
+    Args:
+        model (RandomForestClassifier): Trained model
+        encoder (LabelEncoder): Label encoder used during training
+        feature_cols (list[str]): List of feature column names
+        new_data (dict[str, int]): New patient data
+
+    Returns:
+        dict: Prediction result, confidence, and probabilities
     """
-    # 1. Convert input to DataFrame
+    # Convert input to DataFrame
     sample_df = DataFrame([new_data])
     
-    # 2. Calculate total count
-    sample_df['total_count'] = sample_df[feature_cols].sum(axis=1)
+    # Calculate total count
+    sample_df['total_count'] = sample_df[feature_cols].sum(axis = 1)
     
-    # 3. Calculate percentages exactly as done during training
+    # Calculate percentages exactly as done during training
     X_input = DataFrame()
     for col in feature_cols:
         X_input[f"{col}_pct"] = (sample_df[col] / sample_df['total_count']) * 100
     
-    # 4. Get prediction and probabilities
+    # Get prediction and probabilities
     pred_code = model.predict(X_input)[0]
     prob = model.predict_proba(X_input)[0]
     
-    # 5. Decode prediction (0/1 -> no/yes)
+    # Decode prediction (0 / 1 -> no / yes)
     label = encoder.inverse_transform([pred_code])[0]
     
     # Get the probability for the predicted class
@@ -185,11 +204,11 @@ def predict_new_sample(model: RandomForestClassifier, encoder: LabelEncoder, fea
         'probability_yes': round(prob[1] * 100, 2)
     }
 
-# Handle multiple samples per subject by averaging
-# This prevents data leakage during cross-validation
-DATA_FRAME_SUBJECT = DATA_FRAME2.groupby(['subject', 'response'])[CELL_TYPES].mean().reset_index()
+def main():
+    # Handle multiple samples per subject by averaging
+    # This prevents data leakage during cross-validation
+    DATA_FRAME_SUBJECT = DATA_FRAME2.groupby(['subject', 'response'])[CELL_TYPES].mean().reset_index()
 
-if __name__ == "__main__":
     # Train and evaluate the model
     clf, le = train_and_evaluate_model(DATA_FRAME_SUBJECT)
 
@@ -203,8 +222,12 @@ if __name__ == "__main__":
     }
 
     result = predict_new_sample(clf, le, CELL_TYPES, new_patient_data)
+    
     print(f"\n=== New Patient Prediction ===")
     print(f"Prediction: {result['prediction']}")
     print(f"Confidence: {result['confidence']}%")
     print(f"P(no response): {result['probability_no']}%")
     print(f"P(yes response): {result['probability_yes']}%")
+
+if __name__ == "__main__":
+    main()
