@@ -91,6 +91,13 @@ Run the subset analysis
     <img alt="SQLite database schema" src="db_schema.svg">
 </div>
 
+My database [`subjects.db`](subjects.db) contains 3 tables:
+   * `samples`: Contains information about each sample; generated in [`load_data.py`](load_data.py)
+   * `subjects`: Contains information about each subject; generated in [`load_data.py`](load_data.py)
+   * `summary_table`: Contains summary statistics for each sample; generated in [`data_analysis.py`](data_analysis.py)
+
+Initially I considered making a `project` table, but I decided against it because there are only 3 unique projects (i.e. `proj1`, `proj2`, `proj3`) in the dataset. However, if there were hundreds of projects or more, I'd have created a `project` table and link it to the `subjects` table (instead of the `project` column in the `subjects` table).
+
 ## Overview
 
 ## Dashboard
@@ -103,6 +110,20 @@ Run the subset analysis
 > ```sh
 > python app.py
 > ```
+
+## Assumptions
+* An empty `response` does **NOT** imply a value of `no`. In other words, I did **NOT** interpret any sample with an empty `response` as a non-responder (i.e. `response=NULL` is **NOT** interpreted as `response=no`).
+* Data is **NOT** normally distributed, so I used **Mann–Whitney U test** for the statistical analysis.
+* For [**Part 3: Statistical Analysis**](#part-3-statistical-analysis):
+  * I was unsure of these instructions:
+     > Visualize the population relative frequencies comparing responders versus non-responders using a boxplot of for each immune cell population.
+     > 
+     > Report which cell populations have a significant difference in relative frequencies between responders and non-responders. Statistics are needed to support any conclusion to convince Yah of Bob's findings.
+   * I didn't know if the visualization and report should be for "`melanoma` patients receiving `miraclib` who respond (`responders`) versus those who do not (`non-responders`)", as specified in the 1st bullet of that section, or if the visualization should be for all samples
+   * As a result, I decided to play it safe by including visualizations and reports for both:
+     * **ALL** samples (i.e. includes non-`melanoma` patients, non-`miraclib`, etc.)
+     * **ONLY** `melanoma` patients receiving `miraclib` who are `responders` or `non-responders`
+   * Each one has been labeled accordingly in the dashboard.
 
 ## Repository Structure
 ```plaintext
@@ -133,8 +154,3 @@ Run the subset analysis
 | `stats_analysis.py` | Statistical analysis of data in `subjects.db` for "Part 3". Data will be displayed in the web dashboard. |
 | `subjects.db` | SQLite database containing samples, subjects, and summary tables |
 | `subset_analysis.py` | Filters and analyzes data from `subjects.db` for "Part 4". Data will be displayed in the web dashboard. |
-
-## Assumptions
-* An empty `response` does NOT imply a value of `no`. In other words, I excluded any sample with an empty `response` from the analysis.
-* In Part 3, the visualization does not exclude non-`melanoma` patients, non-`PBMC` samples, or non-`miraclib` treatments.
-* Data is **NOT** normally distributed, so I used Mann–Whitney U test for Part 3.
