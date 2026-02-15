@@ -87,18 +87,23 @@ Run the subset analysis
    ```
 
 ## Database Schema
-<div align="center">
-    <img alt="SQLite database schema" src="db_schema.svg">
-</div>
+<div align="center"><img alt="SQLite database schema" src="assets/db_schema.svg"></div>
 
 My database [`subjects.db`](subjects.db) contains 3 tables:
    * `samples`: Contains information about each sample; generated in [`load_data.py`](load_data.py)
    * `subjects`: Contains information about each subject; generated in [`load_data.py`](load_data.py)
    * `summary_table`: Contains summary statistics for each sample; generated in [`data_analysis.py`](data_analysis.py)
 
-Initially I considered making a `project` table, but I decided against it because there are only 3 unique projects (i.e. `proj1`, `proj2`, `proj3`) in the dataset. However, if there were hundreds of projects or more, I'd have created a `project` table and link it to the `subjects` table (instead of the `project` column in the `subjects` table).
+I initially considered making a `project` table, but decided against it since there are only 3 unique projects (i.e. `proj1`, `proj2`, `proj3`) in the dataset.
+
+However, if there were hundreds of projects and thousands of samples, I'd create a `project` table and link it to the `subjects` table (instead of a `project` column in the `subjects` table) so it'd scale better. I'd also create `cells` table linked to `samples` (instead of columns for each cell population in the `samples` table) in case more cell types are added in the future.
 
 ## Overview
+`load_data.py` was explicitly defined as a Python script, so I implemented it as such. However, I wasn't sure if I should implement my other solutions as Python scripts or Jupyter notebooks. Though I was leaning more towards Jupyter notebooks, I went with Python scripts because of the dashboard.
+
+I used Plotly to generate the dashboard. In order to deploy the dashboard, I have to upload all relevant files in this repository to [Plotly Cloud](https://plotly.com/cloud). This requires an [`app.py`](app.py) file, which doesn't apply to a Jupyter notebook. I also wanted to keep everything modular instead of having one huge `app.py` file, so I implemented the statistical analysis and subset analysis (i.e. [`stats_analysis.py`](stats_analysis.py), and [`subset_analysis.py`](subset_analysis.py)) separately, so that they can be imported into [`app.py`](app.py) for visualization in the dashboard.
+
+In the future, I plan to create a Jupyter notebook for my solution so that both options are viable.
 
 ## Dashboard
 <div align="center"><span style="font-size: 1.5em; font-weight: bold; text-decoration: underline;"><a href="https://be97c6b7-cf30-4e8b-958d-837de4ee4a72.plotly.app" target="_blank" title="Interactive dashboard hosted by Plotly">Interactive dashboard for Teiko Exam</a></span></div>
@@ -120,19 +125,21 @@ Initially I considered making a `project` table, but I decided against it becaus
      > 
      > Report which cell populations have a significant difference in relative frequencies between responders and non-responders. Statistics are needed to support any conclusion to convince Yah of Bob's findings.
    * I didn't know if the visualization and report should be for "`melanoma` patients receiving `miraclib` who respond (`responders`) versus those who do not (`non-responders`)", as specified in the 1st bullet of that section, or if the visualization should be for all samples
-   * As a result, I decided to play it safe by including visualizations and reports for both:
+   * As a result, I decided to play it safe by including visualizations and reports for both and labeled each one accordingly:
      * **ALL** samples (i.e. includes non-`melanoma` patients, non-`miraclib`, etc.)
      * **ONLY** `melanoma` patients receiving `miraclib` who are `responders` or `non-responders`
-   * Each one has been labeled accordingly in the dashboard.
+   * Regarding the "... overarching aim of predicting response to the treatment miraclib", I wasn't sure if this meant I had to build a predictive model (or if it implied that this was outside the scope of the exam), so I decided to implement one in [`stats_analysis.py`](stats_analysis.py) just in case
 
 ## Repository Structure
 ```plaintext
 .
+├── assets/
+│   ├── db_schema.svg
+│   └── stylesheet.css
 ├── .gitignore
 ├── app.py
 ├── cell-count.csv
 ├── data_analysis.py
-├── db_schema.svg
 ├── load_data.py
 ├── README.md
 ├── requirements.txt
@@ -143,11 +150,12 @@ Initially I considered making a `project` table, but I decided against it becaus
 
 | Filename | Description |
 |:--------:|:-----------:|
+| `.assets/db_schema.svg` | Image displaying schema of `subjects.db` |
+| `.assets/stylesheet.css` | CSS stylesheet for the web dashboard |
 | `.gitignore` | Files and directories to be ignored by Git |
 | `app.py` | Creates a web dashboard using Plotly |
 | `cell-count.csv` | Original dataset |
 | `data_analysis.py` | Generate and print the summary table for "Part 2". Data will be displayed in the web dashboard. |
-| `db_schema.svg` | Image displaying schema of `subjects.db` |
 | `load_data.py` | Set up the SQLite database `subjects.db` and load the data from `cell-count.csv` for "Part 1" |
 | `README.md` | This file |
 | `requirements.txt` | Dependencies |
