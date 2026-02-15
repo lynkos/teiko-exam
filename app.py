@@ -1,7 +1,7 @@
 from dash import Dash, html, dcc
 import dash_ag_grid as dag
 import plotly.express as px
-from stats_analysis import DATA_FRAME, COMPARISON, DATA_FRAME_SUMMARY, DATA_FRAME2, DATA_FRAME_FILTERED_BOXPLOT
+from stats_analysis import DATA_FRAME, COMPARISON, COMPARISON_FILTER, DATA_FRAME_SUMMARY, DATA_FRAME2, DATA_FRAME_FILTERED_BOXPLOT
 from subset_analysis import DATA_FRAME_PROJECTS, DATA_FRAME_RESPONDERS, DATA_FRAME_SEXES, DATA_FRAME_FILTER
 
 # pip install "dash[cloud]"
@@ -34,22 +34,34 @@ app.layout = [
                               subtitle = "Relative frequencies of responders vs. non-responders for each cell population"
                             )
               ),
+    
+    html.H2(children = "Differences in relative frequencies between responders vs. non-responders for each cell population",
+            style = { 'textAlign': 'center', 'fontSize': FONT_SIZE }),
+    html.H3(children = "This data is for all samples with responses",
+            style = { 'textAlign': 'center', 'fontSize': (FONT_SIZE * 0.9) }),
+    dag.AgGrid(
+        rowData = COMPARISON.to_dict("records"),
+        dashGridOptions = { "domLayout": "autoHeight" },
+        columnDefs = [ { "field": i } for i in COMPARISON.columns ]
+    ),
 
     dcc.Graph(figure = px.box(DATA_FRAME_FILTERED_BOXPLOT,
                               x = "population",
                               y = "percentage",
                               color = "response",
                               title = "Filtered Responders vs. Non-Responders",
-                              subtitle = "Relative frequencies of melanoma patients receiving miraclib who respond vs. those who do not for each cell population. Only PBMC samples included."
+                              subtitle = "Relative frequencies of melanoma patients receiving miraclib who respond vs. non-responders for each cell population that includes PBMC samples"
                             )
               ),
 
     html.H2(children = "Differences in relative frequencies between responders vs. non-responders for each cell population",
             style = { 'textAlign': 'center', 'fontSize': FONT_SIZE }),
+    html.H3(children = "This data is filtered to only include melanoma patients receiving miraclib with PBMC samples",
+            style = { 'textAlign': 'center', 'fontSize': (FONT_SIZE * 0.9) }),
     dag.AgGrid(
-        rowData = COMPARISON.to_dict("records"),
+        rowData = COMPARISON_FILTER.to_dict("records"),
         dashGridOptions = { "domLayout": "autoHeight" },
-        columnDefs = [ { "field": i } for i in COMPARISON.columns ]
+        columnDefs = [ { "field": i } for i in COMPARISON_FILTER.columns ]
     ),
 
     html.H1(children = "Part 4: Data Subset Analysis",
