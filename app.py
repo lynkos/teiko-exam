@@ -1,7 +1,7 @@
 from dash import Dash, html, dcc
 import dash_ag_grid as dag
 import plotly.express as px
-from stats_analysis import RESP_FREQ_DF, COMPARISON, COMPARISON_FILTER, DATA_FRAME_SUMMARY, DATA_FRAME2, DATA_FRAME_FILTERED_BOXPLOT
+from stats_analysis import RESP_FREQ_DF, COMPARISON, COMPARISON_FILTER, DATA_FRAME_SUMMARY, DATA_FRAME_FILTERED_BOXPLOT
 from subset_analysis import DATA_FRAME_PROJECTS, DATA_FRAME_RESPONDERS, DATA_FRAME_SEXES, DATA_FRAME_FILTER
 
 # pip install "dash[cloud]"
