@@ -17,6 +17,8 @@ DATA_FRAME_FILTER = pandas.read_sql_query(
         AND subj.treatment = 'miraclib'
     """, connection
 )
+print("1. All melanoma PBMC samples at baseline from patients treated with miraclib:")
+print(DATA_FRAME_FILTER)
 
 # How many samples from each project
 DATA_FRAME_PROJECTS = pandas.read_sql_query(
@@ -30,6 +32,8 @@ DATA_FRAME_PROJECTS = pandas.read_sql_query(
         GROUP BY subj.project
     """, connection
 )
+print("\n2. Among the previously filtered samples, number of samples from each project:")
+print(DATA_FRAME_PROJECTS)
 
 # How many subjects were responders/non-responders 
 DATA_FRAME_RESPONDERS = pandas.read_sql_query(
@@ -43,6 +47,8 @@ DATA_FRAME_RESPONDERS = pandas.read_sql_query(
         GROUP BY subj.response
     """, connection
 )
+print("\n3. Among the previously filtered samples, number of subjects who were responders (yes) vs. non-responders (no):")
+print(DATA_FRAME_RESPONDERS)
 
 # How many subjects were males/females
 DATA_FRAME_SEXES = pandas.read_sql_query(
@@ -56,6 +62,8 @@ DATA_FRAME_SEXES = pandas.read_sql_query(
         GROUP BY subj.sex
     """, connection
 )
+print("\n4. Among the previously filtered samples, number of subjects who were males (M) vs females (F):")
+print(DATA_FRAME_SEXES)
 
 # Get number of b_cells for all males AND melanoma AND t = 0 AND responds
 DF = pandas.read_sql_query(
@@ -70,6 +78,6 @@ DF = pandas.read_sql_query(
 )
 
 avg_b_cells = DF['b_cell'].mean()
-print("Average number of B cells for Melanoma males responders at time = 0 is:", avg_b_cells)
+print("\n5. Average number of B cells for Melanoma males responders at time = 0:", avg_b_cells)
 
 connection.close()
