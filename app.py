@@ -6,7 +6,6 @@ from subset_analysis import DATA_FRAME_PROJECTS, DATA_FRAME_RESPONDERS, DATA_FRA
 
 # pip install "dash[cloud]"
 
-# CONSTANTS
 HEADER_SIZE = 25
 FONT_SIZE = 18
 SMALL_TABLE_WIDTH = "30rem"
@@ -34,6 +33,7 @@ app.layout = [
                               x = "population",
                               y = "percentage",
                               color = "response",
+                              labels = { "population": "Cell Population", "percentage": "Relative Frequency (%)", "response": "Response Status" },
                               title = "Responders vs. Non-Responders",
                               subtitle = "Relative frequencies of responders vs. non-responders for each cell population"
                             )
@@ -53,6 +53,7 @@ app.layout = [
                               x = "population",
                               y = "percentage",
                               color = "response",
+                              labels = { "population": "Cell Population", "percentage": "Relative Frequency (%)", "response": "Response Status" },
                               title = "Filtered Responders vs. Non-Responders",
                               subtitle = "Relative frequencies of melanoma patients receiving miraclib who respond vs. non-responders for each cell population that includes PBMC samples"
                             )
