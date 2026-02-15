@@ -18,7 +18,7 @@ DATA_FRAME_SUMMARY = pandas.read_sql_query(
 # versus non-responders using a boxplot for each
 # immune cell population
 DATA_FRAME = pandas.read_sql_query(
-    f"""SELECT s.population, s.percentage, subj.response, t.subject
+    f"""SELECT s.population, s.percentage, subj.response
         FROM {SUMMARY_TABLE_NAME} s
         JOIN samples t ON s.sample = t.sample
         JOIN subjects subj ON t.subject = subj.subject
@@ -30,7 +30,7 @@ DATA_FRAME = pandas.read_sql_query(
 # versus non-responders using a boxplot for each
 # immune cell population
 DATA_FRAME_FILTERED_BOXPLOT = pandas.read_sql_query(
-    f"""SELECT s.population, s.percentage, subj.response, t.subject
+    f"""SELECT s.population, s.percentage, subj.response
         FROM {SUMMARY_TABLE_NAME} s
         JOIN samples t ON s.sample = t.sample
         JOIN subjects subj ON t.subject = subj.subject
@@ -67,24 +67,16 @@ connection.close()
 def compare_populations(input_df = DATA_FRAME_FILTERED_BOXPLOT):
     """
     Compare cell populations between responders and non-responders
-    by first averaging samples within each subject to handle repeated measures.
     """
-        
-    # Average the percentages for each subject within each population
-    # This collapses multiple samples per subject down to one value per subject
-    df_averaged = input_df.groupby(
-        ['subject', 'population', 'response'], 
-        as_index=False
-    )['percentage'].mean()
     
-    populations = df_averaged['population'].unique()
+    populations = input_df['population'].unique()
     results = []
     
     alpha = 0.05
 
     for pop in populations:
         # Filter for this specific cell population
-        df_pop = df_averaged[df_averaged['population'] == pop]
+        df_pop = input_df[input_df['population'] == pop]
         
         # Separate by response status
         # Now each value represents one subject's average
@@ -121,7 +113,7 @@ def compare_populations(input_df = DATA_FRAME_FILTERED_BOXPLOT):
     
     return results_df
 
-COMPARISON = compare_populations(DATA_FRAME)
+COMPARISON = compare_populations()
 
 def train_model(df):    
     # 1. Feature Engineering (Percentages)
