@@ -85,6 +85,8 @@ app.layout = [
 
     html.H2(children = "2. How many samples from each project",
             style = { "textAlign": "center", "fontSize": FONT_SIZE, "fontFamily": FONT_FAMILY }),
+    html.P(children = "Note: All other projects (i.e. prj2) have 0 samples in the filtered dataset",
+            style = { "textAlign": "center", "fontFamily": FONT_FAMILY }),
     dag.AgGrid(
         rowData = DATA_FRAME_PROJECTS.to_dict("records"),
         dashGridOptions = { "domLayout": "autoHeight", "theme": THEME },
