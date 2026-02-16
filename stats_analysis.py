@@ -90,6 +90,8 @@ def compare_populations(input_df: DataFrame = DATA_FRAME_FILTERED_BOXPLOT) -> Da
     
     populations = df_averaged['population'].unique()
     results = []
+
+    bonferroni_threshold = ALPHA / len(populations)
     
     for pop in populations:
         # Filter for this specific cell population
@@ -115,15 +117,17 @@ def compare_populations(input_df: DataFrame = DATA_FRAME_FILTERED_BOXPLOT) -> Da
         
         # Determine significance
         significant_uncorrected = "Yes" if p_val < ALPHA else "No"
+        significant_bonferroni = "Yes" if p_val < bonferroni_threshold else "No"
         
         results.append({
             'Cell Population': pop,
-            'Median Responders (%)': round(median_yes, 5),
-            'Median Non-Responders (%)': round(median_no, 5),
-            'Median Difference (%)': round(median_diff, 5),
+            'Median Responders (%)': round(median_yes, 2),
+            'Median Non-Responders (%)': round(median_no, 2),
+            'Median Difference (%)': round(median_diff, 2),
             'P-Value': round(p_val, 5),
             'Significant Difference': significant_uncorrected,
-            'Effect Size (r)': round(rank_biserial, 5)
+            'Significant Difference (Bonferroni)': significant_bonferroni,
+            'Effect Size (r)': round(rank_biserial, 2)
         })
 
     results_df = DataFrame(results)
