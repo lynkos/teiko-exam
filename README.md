@@ -56,7 +56,7 @@
 
 ## Usage
 > [!IMPORTANT]
-> Regarding the scripts in [**Part 2: Initial Analysis - Data Overview**](#part-2-initial-analysis---data-overview), [**Part 3: Statistical Analysis**](#part-3-statistical-analysis), and [**Part 4: Data Subset Analysis**](#part-4-data-subset-analysis):
+> Regarding the scripts in [**Part 2**](#part-2-initial-analysis---data-overview), [**Part 3**](#part-3-statistical-analysis), and [**Part 4**](#part-4-data-subset-analysis):
 > * The output data for each of those scripts is displayed in the [web dashboard](https://be97c6b7-cf30-4e8b-958d-837de4ee4a72.plotly.app) (see [**Dashboard**](#dashboard) section for more details).
 > * Therefore, running the scripts may not be necessary since it's already visualized in the [web dashboard](https://be97c6b7-cf30-4e8b-958d-837de4ee4a72.plotly.app).
 > * Alternatively, if you want to see the output in the terminal, you can run the scripts.
@@ -95,7 +95,7 @@ My database [`subjects.db`](subjects.db) contains 3 tables:
 
 I initially considered making a `project` table, but decided against it since there are only 3 unique projects (i.e. `proj1`, `proj2`, `proj3`) in the dataset.
 
-However, if there were hundreds of projects and thousands of samples, I'd create a `project` table and link it to the `subjects` table (instead of a `project` column in the `subjects` table) so it'd scale better. I'd also create `cells` table linked to `samples` (instead of columns for each cell population in the `samples` table) in case more cell types are added in the future.
+However, if there were hundreds of projects and thousands of samples, I'd create a `project` table and link it to the `subjects` table (instead of a `project` column in the `subjects` table) so it'd scale better. I'd also create `cells` table linked to `samples` (instead of columns for each cell population in the `samples` table) in case more cell types are added in the future. To improve performance, I also added indexes to the certain tables for frequently queried columns.
 
 ## Overview
 `load_data.py` was explicitly defined as a Python script, so I implemented it as such. However, I wasn't sure if I should implement my other solutions as Python scripts or Jupyter notebooks. Though I was leaning more towards Jupyter notebooks, I went with Python scripts because of the dashboard.
@@ -105,10 +105,10 @@ I used Plotly to generate the dashboard. In order to deploy the dashboard, I hav
 In the future, I plan to create a Jupyter notebook for my solution so that both options are viable.
 
 ## Dashboard
-<div align="center"><span style="font-size: 1.5em; font-weight: bold; text-decoration: underline;"><a href="https://be97c6b7-cf30-4e8b-958d-837de4ee4a72.plotly.app" target="_blank" title="Interactive dashboard hosted by Plotly">Interactive dashboard for Teiko Exam</a></span></div>
+<div align="center"><span style="text-decoration: underline;"><h3><a href="https://be97c6b7-cf30-4e8b-958d-837de4ee4a72.plotly.app" target="_blank" title="Interactive dashboard hosted by Plotly">Interactive dashboard for Teiko Exam</a></h3></span></div>
 
 > [!NOTE]
-> This dashboard has been generated with the [`app.py`](app.py) script and uploaded to [Plotly Cloud](https://plotly.com/cloud). You can click the link above to view the dashboard, which includes visualizations for all parts of the exam (except [**Part 1: Data Management**](#part-1-data-management)).
+> This dashboard has been generated with the [`app.py`](app.py) script and uploaded to [Plotly Cloud](https://plotly.com/cloud). You can click the link above to view the dashboard, which includes visualizations for all parts of the exam (except [**Part 1**](#part-1-data-management)).
 > 
 > To run the dashboard locally:
 > ```sh
@@ -118,7 +118,7 @@ In the future, I plan to create a Jupyter notebook for my solution so that both 
 ## Assumptions
 * An empty `response` does **NOT** imply a value of `no`. In other words, I did **NOT** interpret any sample with an empty `response` as a non-responder (i.e. `response=NULL` is **NOT** interpreted as `response=no`).
 * Data is **NOT** normally distributed, so I used **Mann–Whitney U test** for the statistical analysis.
-* For [**Part 3: Statistical Analysis**](#part-3-statistical-analysis):
+* For [**Part 3**](#part-3-statistical-analysis):
   * I was unsure of these instructions:
      > Visualize the population relative frequencies comparing responders versus non-responders using a boxplot of for each immune cell population.
      > 
@@ -149,15 +149,15 @@ In the future, I plan to create a Jupyter notebook for my solution so that both 
 
 | Filename | Description |
 |:--------:|:-----------:|
-| `.assets/db_schema.svg` | Image displaying schema of `subjects.db` |
-| `.assets/stylesheet.css` | CSS stylesheet for the web dashboard |
+| `assets/db_schema.svg` | Image displaying schema of `subjects.db` |
+| `assets/stylesheet.css` | CSS stylesheet for the web dashboard |
 | `.gitignore` | Files and directories to be ignored by Git |
 | `app.py` | Creates a web dashboard using Plotly |
 | `cell-count.csv` | Original dataset |
-| `data_analysis.py` | Generate and print the summary table for "Part 2". Data will be displayed in the web dashboard. |
-| `load_data.py` | Set up the SQLite database `subjects.db` and load the data from `cell-count.csv` for "Part 1" |
+| `data_analysis.py` | Generate and print the summary table for [**Part 2**](#part-2-initial-analysis---data-overview). Data will be displayed in the web dashboard. |
+| `load_data.py` | Set up the SQLite database `subjects.db` and load the data from `cell-count.csv` for [**Part 1**](#part-1-data-management) |
 | `README.md` | This file |
 | `requirements.txt` | Dependencies |
-| `stats_analysis.py` | Statistical analysis of data in `subjects.db` for "Part 3". Data will be displayed in the web dashboard. |
+| `stats_analysis.py` | Statistical analysis of data in `subjects.db` for [**Part 3**](#part-3-statistical-analysis). Data will be displayed in the web dashboard. |
 | `subjects.db` | SQLite database containing samples, subjects, and summary tables |
-| `subset_analysis.py` | Filters and analyzes data from `subjects.db` for "Part 4". Data will be displayed in the web dashboard. |
+| `subset_analysis.py` | Filters and analyzes data from `subjects.db` for [**Part 4**](#part-4-data-subset-analysis). Data will be displayed in the web dashboard. |
