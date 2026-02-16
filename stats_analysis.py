@@ -121,9 +121,9 @@ def compare_populations(input_df: DataFrame = DATA_FRAME_FILTERED_BOXPLOT) -> Da
         
         results.append({
             'Cell Population': pop,
-            'Median Responders (%)': round(median_yes, 2),
-            'Median Non-Responders (%)': round(median_no, 2),
-            'Median Difference (%)': round(median_diff, 2),
+            'Median Frequency for Responders (%)': round(median_yes, 2),
+            'Median Frequency for Non-Responders (%)': round(median_no, 2),
+            'Difference Between Responder and Non-Responder Medians (%)': round(median_diff, 2),
             'P-Value': round(p_val, 5),
             'Significant Difference': significant_uncorrected,
             'Significant Difference (Bonferroni)': significant_bonferroni,
