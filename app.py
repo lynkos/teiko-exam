@@ -83,7 +83,7 @@ app.layout = [
         dashGridOptions = { "theme": THEME },
     ),
 
-    html.H2(children = "2. How many samples from each project",
+    html.H2(children = "2. How many samples from each project in the filtered dataset",
             style = { "textAlign": "center", "fontSize": FONT_SIZE, "fontFamily": FONT_FAMILY }),
     html.P(children = "Note: All other projects (i.e. prj2) have 0 samples in the filtered dataset",
             style = { "textAlign": "center", "fontFamily": FONT_FAMILY }),
@@ -95,7 +95,7 @@ app.layout = [
         columnDefs = [ { "field": i } for i in DATA_FRAME_PROJECTS.columns ]
     ),
 
-    html.H2(children = "3. How many subjects were Responders (yes) vs Non-Responders (no)",
+    html.H2(children = "3. How many subjects were Responders (yes) vs Non-Responders (no) in the filtered dataset",
             style = { "textAlign": "center", "fontSize": FONT_SIZE, "fontFamily": FONT_FAMILY }),
     dag.AgGrid(
         rowData = DATA_FRAME_RESPONDERS.to_dict("records"),
@@ -105,7 +105,7 @@ app.layout = [
         columnDefs = [ { "field": i } for i in DATA_FRAME_RESPONDERS.columns ]
     ),
 
-    html.H2(children = "4. How many subjects were Males (M) vs. Females (F)",
+    html.H2(children = "4. How many subjects were Males (M) vs. Females (F) in the filtered dataset",
             style = { "textAlign": "center", "fontSize": FONT_SIZE, "fontFamily": FONT_FAMILY }),
     dag.AgGrid(
         rowData = DATA_FRAME_SEXES.to_dict("records"),
