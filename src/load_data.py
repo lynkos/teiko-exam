@@ -150,6 +150,10 @@ def create_database(connection: Connection) -> None:
 
     # Indexing for faster queries
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_samples_subject ON samples(subject)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_summary_sample ON summary(sample)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_samples_type_time ON samples(sample_type, time_from_treatment_start, subject)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_subjects_condition_treatment_response ON subjects(condition, treatment, response)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_subjects_sex ON subjects(sex)")
 
     connection.commit()
 
